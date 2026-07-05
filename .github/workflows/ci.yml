@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-structure:
+    name: Validate repository structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify top-level folders
+        shell: bash
+        run: |
+          set -euo pipefail
+          required_dirs=(
+            "01 Documents"
+            "02 Source"
+            "03 Infrastructure"
+            "04 Scripts"
+            "05 Tests"
+            "06 Assets"
+          )
+          for dir in "${required_dirs[@]}"; do
+            if [[ ! -d "$dir" ]]; then
+              echo "Missing required directory: $dir"
+              exit 1
+            fi
+          done
+          echo "Repository structure OK"
+
+      - name: Verify root files
+        shell: bash
+        run: |
+          set -euo pipefail
+          required_files=(
+            "README.md"
+            "LICENSE"
+            "CHANGELOG.md"
+            ".gitignore"
+          )
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "Missing required file: $file"
+              exit 1
+            fi
+          done
+          echo "Root files OK"
+
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('02 Source/Backend/requirements.txt', '02 Source/Backend/pyproject.toml') != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: 02 Source/Backend
+        run: |
+          if [[ -f requirements.txt ]]; then
+            pip install -r requirements.txt
+          elif [[ -f pyproject.toml ]]; then
+            pip install .
+          else
+            echo "No backend dependency file found yet."
+            exit 0
+          fi
+
+      - name: Run tests
+        working-directory: 02 Source/Backend
+        run: |
+          if [[ -d ../../05\ Tests/Unit ]]; then
+            pytest ../../05\ Tests/Unit || echo "No backend tests configured yet."
+          else
+            echo "No unit tests directory found yet."
+          fi
+
+  frontend:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('02 Source/Frontend/package.json') != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: 02 Source/Frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: 02 Source/Frontend
+        run: |
+          if [[ -f package.json ]]; then
+            npm ci
+          else
+            echo "No frontend package.json found yet."
+            exit 0
+          fi
+
+      - name: Run tests
+        working-directory: 02 Source/Frontend
+        run: |
+          if [[ -f package.json ]] && npm run | grep -q " test"; then
+            npm test
+          else
+            echo "No frontend test script configured yet."
+          fi

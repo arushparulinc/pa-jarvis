@@ -1,0 +1,80 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# Node / React
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+.vite/
+.next/
+.nuxt/
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Docker and runtime logs
+*.log
+.docker/
+
+# Local databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Secrets and credentials
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Kubernetes / Helm
+**/charts/*.tgz
+
+# Draw.io backups
+*.bkp
+*.dtmp
+
+# Portfolio binaries (add to repo intentionally when ready)
+# docs/07 Portfolio/*.pptx
