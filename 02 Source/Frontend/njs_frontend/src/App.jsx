@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const API_URL = `${import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000"}/api/chat`;
+
 const quickPrompts = [
   "What can you help me with?",
   "Summarize my recent activity",
@@ -126,24 +128,51 @@ const styles = {
 
 function App() {
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const [messages, setMessages] = useState([
     { id: 1, role: "assistant", text: "Hi! I’m Jarvis. How can I help you today?" },
   ]);
 
-  const sendMessage = (text) => {
+  const sendMessage = async (text) => {
     const cleanText = text.trim();
-    if (!cleanText) return;
+    if (!cleanText || isSending) return;
 
     setMessages((current) => [
       ...current,
       { id: Date.now(), role: "user", text: cleanText },
-      {
-        id: Date.now() + 1,
-        role: "assistant",
-        text: "Thanks for your message. Connect me to your chatbot service and I’ll respond here.",
-      },
     ]);
     setInput("");
+    setIsSending(true);
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: cleanText }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Chat request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      setMessages((current) => [
+        ...current,
+        { id: data.id, role: data.role, text: data.message },
+      ]);
+    } catch (error) {
+      console.error("Unable to reach the chat API:", error);
+      setMessages((current) => [
+        ...current,
+        {
+          id: `error-${Date.now()}`,
+          role: "assistant",
+          text: "I could not reach the server. Please make sure the FastAPI backend is running.",
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleSubmit = (event) => {
@@ -171,7 +200,13 @@ function App() {
             </p>
             <div style={styles.prompts}>
               {quickPrompts.map((prompt) => (
-                <button key={prompt} type="button" style={styles.prompt} onClick={() => sendMessage(prompt)}>
+                <button
+                  key={prompt}
+                  type="button"
+                  style={{ ...styles.prompt, opacity: isSending ? 0.6 : 1 }}
+                  onClick={() => sendMessage(prompt)}
+                  disabled={isSending}
+                >
                   {prompt}
                 </button>
               ))}
@@ -199,6 +234,13 @@ function App() {
               </div>
             );
           })}
+          {isSending && (
+            <div style={{ ...styles.messageRow, justifyContent: "flex-start" }}>
+              <div style={{ ...styles.message, background: "#f0f2f6", color: "#667085" }}>
+                Jarvis is thinking...
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={styles.composerArea}>
@@ -209,8 +251,14 @@ function App() {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Message Jarvis..."
               aria-label="Message Jarvis"
+              disabled={isSending}
             />
-            <button style={{ ...styles.send, opacity: input.trim() ? 1 : 0.5 }} type="submit" aria-label="Send message">
+            <button
+              style={{ ...styles.send, opacity: input.trim() && !isSending ? 1 : 0.5 }}
+              type="submit"
+              aria-label="Send message"
+              disabled={isSending || !input.trim()}
+            >
               ↑
             </button>
           </form>
