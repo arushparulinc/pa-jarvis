@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from google import genai
@@ -5,10 +6,19 @@ from google.genai import types
 
 
 DEFAULT_MODEL = "gemini-2.5-flash"
+
 SYSTEM_INSTRUCTION = (
+    "You are BingaBoo, the user's personal assistant. "
+    "When asked your name or identity, always identify yourself as BingaBoo. "
     "Answer clearly, acknowledge uncertainty, and do not invent facts."
 )
+
 google_search = types.Tool(google_search=types.GoogleSearch())
+
+# Gemini expects the value passed to `contents` to be an ordered list. Keeping
+# that list in a dictionary leaves room for conversation-level metadata later.
+chat_history: dict[str, list[dict[str, object]]] = {"messages": []}
+chat_history_lock = asyncio.Lock()
 
 
 class GeminiError(RuntimeError):
@@ -20,30 +30,50 @@ class GeminiConfigurationError(GeminiError):
 
 
 async def generate_reply(message: str) -> str:
-    """Generate one assistant response for a user message using Gemini."""
+    """Append a turn to the history and generate the next Gemini response."""
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise GeminiConfigurationError("GEMINI_API_KEY is not configured.")
 
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
+    user_message = {
+        "role": "user",
+        "parts": [{"text": message}],
+    }
 
-    try:
-        async with genai.Client(api_key=api_key).aio as client:
-            response = await client.models.generate_content(
-                model=model,
-                contents=message,
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_INSTRUCTION,
-                    tools=[google_search],
-                    temperature=0.7,
-                    max_output_tokens=1_024,
-                ),
-            )
-    except Exception as exc:
-        raise GeminiError("Gemini request failed.") from exc
+    # Keep each user/model pair together when requests arrive concurrently.
+    async with chat_history_lock:
+        chat_history["messages"].append(user_message)
 
-    reply = response.text
-    if not reply or not reply.strip():
-        raise GeminiError("Gemini returned an empty response.")
+        try:
+            async with genai.Client(api_key=api_key).aio as client:
+                response = await client.models.generate_content(
+                    model=model,
+                    contents=chat_history["messages"],
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_INSTRUCTION,
+                        tools=[google_search],
+                        temperature=0.7,
+                        max_output_tokens=1_024,
+                    ),
+                )
 
-    return reply.strip()
+            reply = response.text
+            if not reply or not reply.strip():
+                raise GeminiError("Gemini returned an empty response.")
+        except GeminiError:
+            chat_history["messages"].pop()
+            raise
+        except Exception as exc:
+            chat_history["messages"].pop()
+            raise GeminiError("Gemini request failed.") from exc
+
+        clean_reply = reply.strip()
+        chat_history["messages"].append(
+            {
+                "role": "model",
+                "parts": [{"text": clean_reply}],
+            }
+        )
+
+    return clean_reply
