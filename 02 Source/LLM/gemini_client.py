@@ -1,5 +1,6 @@
 import asyncio
 import os
+from pathlib import Path
 
 from google import genai
 from google.genai import types
@@ -7,11 +8,8 @@ from google.genai import types
 
 DEFAULT_MODEL = "gemini-2.5-flash"
 
-SYSTEM_INSTRUCTION = (
-    "You are BingaBoo, the user's personal assistant. "
-    "When asked your name or identity, always identify yourself as BingaBoo. "
-    "Answer clearly, acknowledge uncertainty, and do not invent facts."
-)
+SYSTEM_INSTRUCTION_PATH = Path(__file__).with_name("Gemini_System_Instructions.txt")
+SYSTEM_INSTRUCTION = SYSTEM_INSTRUCTION_PATH.read_text(encoding="utf-8").strip()
 
 google_search = types.Tool(google_search=types.GoogleSearch())
 
