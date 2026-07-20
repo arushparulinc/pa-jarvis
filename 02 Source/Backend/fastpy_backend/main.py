@@ -14,7 +14,11 @@ SOURCE_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(SOURCE_ROOT))
 load_dotenv(SOURCE_ROOT / "LLM" / ".env")
 
-from LLM import GeminiConfigurationError, GeminiError, generate_reply  # noqa: E402
+from Agents import (  # noqa: E402
+    GeminiConfigurationError,
+    GeminiError,
+    route_chat_message,
+)
 
 
 app = FastAPI(
@@ -72,9 +76,9 @@ async def health_check() -> HealthResponse:
 
 @app.post("/api/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat(request: ChatRequest) -> ChatResponse:
-    """Accept a chat message and return a Gemini-generated response."""
+    """Accept a chat message and route it through the master agent."""
     try:
-        reply = await generate_reply(request.message)
+        reply = await route_chat_message(request.message)
     except GeminiConfigurationError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except GeminiError as exc:
