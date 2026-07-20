@@ -7,6 +7,11 @@ from google.genai import types
 # Use this model unless GEMINI_MODEL overrides it in the environment.
 DEFAULT_MODEL = "gemini-2.5-flash"
 
+# Google Search is a Gemini-managed built-in tool. Application function tools
+# are supplied separately by the master router for each request.
+google_search = types.Tool(google_search=types.GoogleSearch())
+
+
 class GeminiError(RuntimeError):
     """Raised when Gemini cannot generate a usable reply."""
 
@@ -18,7 +23,7 @@ class GeminiConfigurationError(GeminiError):
 async def generate_response(
     contents: list[dict[str, object] | types.Content],
     system_instruction: str,
-    tools: list[types.Tool],
+    tools: list[types.Tool] | None = None,
 ) -> types.GenerateContentResponse:
     """Call Gemini and return the complete response object."""
     # Read credentials at request time so missing configuration produces a clear
@@ -29,6 +34,11 @@ async def generate_response(
 
     # Allow deployments to select a model without changing source code.
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
+
+    # Gemini 2.5 cannot combine built-in Google Search with custom function
+    # declarations. Use the router's custom tools when present; otherwise keep
+    # Google Search available for ordinary chat requests.
+    request_tools = tools if tools else [google_search]
 
     try:
         # The async client prevents the FastAPI event loop from blocking while
@@ -41,7 +51,7 @@ async def generate_response(
                 contents=contents,
                 config=types.GenerateContentConfig(
                     system_instruction=system_instruction,
-                    tools=tools,
+                    tools=request_tools,
                     automatic_function_calling=types.AutomaticFunctionCallingConfig(
                         disable=True,
                     ),
