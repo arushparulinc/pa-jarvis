@@ -1,3 +1,13 @@
-from .gemini_client import GeminiConfigurationError, GeminiError, generate_response
+from .gemini_client import (
+    GeminiAPIError,
+    GeminiConfigurationError,
+    GeminiError,
+    generate_response,
+)
 
-__all__ = ["GeminiConfigurationError", "GeminiError", "generate_response"]
+__all__ = [
+    "GeminiAPIError",
+    "GeminiConfigurationError",
+    "GeminiError",
+    "generate_response",
+]

@@ -15,8 +15,7 @@ sys.path.insert(0, str(SOURCE_ROOT))
 load_dotenv(SOURCE_ROOT / "LLM" / ".env")
 
 from Agents import (  # noqa: E402
-    GeminiConfigurationError,
-    GeminiError,
+    ChatError,
     route_chat_message,
 )
 
@@ -76,20 +75,15 @@ async def health_check() -> HealthResponse:
 
 @app.post("/api/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat(request: ChatRequest) -> ChatResponse:
-    """Accept a chat message and route it through the master agent."""
+    """Accept a chat message and route it through the local Qwen agent."""
     try:
-        reply = await route_chat_message(request.message)
-    except GeminiConfigurationError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-    except GeminiError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail="The AI service could not generate a response.",
-        ) from exc
+        assistant_reply = await route_chat_message(request.message)
+    except ChatError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return ChatResponse(
         id=str(uuid4()),
-        message=reply,
+        message=assistant_reply,
         created_at=datetime.now(UTC),
     )
 

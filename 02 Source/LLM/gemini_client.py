@@ -1,7 +1,7 @@
 import os
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
 
 # Use this model unless GEMINI_MODEL overrides it in the environment.
@@ -13,6 +13,22 @@ class GeminiError(RuntimeError):
 
 class GeminiConfigurationError(GeminiError):
     """Raised when required Gemini configuration is missing."""
+
+
+class GeminiAPIError(GeminiError):
+    """Preserve error information returned by the Gemini API."""
+
+    def __init__(
+        self,
+        message: str,
+        status_code: int,
+        status: str | None,
+        details: object,
+    ) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+        self.status = status
+        self.details = details
 
 
 async def generate_response(
@@ -49,7 +65,18 @@ async def generate_response(
                     max_output_tokens=1_024,
                 ),
             )
+    except errors.APIError as exc:
+        # Preserve Gemini's HTTP code, status, message, and structured response
+        # so the API layer can report errors such as quota exhaustion accurately.
+        raise GeminiAPIError(
+            message=exc.message or str(exc),
+            status_code=exc.code,
+            status=exc.status,
+            details=exc.details,
+        ) from exc
     except Exception as exc:
         # Convert SDK/network errors into the stable application exception that
         # the FastAPI layer already maps to an HTTP 502 response.
-        raise GeminiError("Gemini request failed.") from exc
+        raise GeminiError(
+            f"Gemini request failed: {type(exc).__name__}: {exc}"
+        ) from exc
