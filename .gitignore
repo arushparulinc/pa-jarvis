@@ -1,7 +1,10 @@
 # Environment and secrets
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
+!**/.env.example
 02 Source/LLM/.env
 
 # Python
@@ -62,6 +65,9 @@ Desktop.ini
 *.key
 credentials.json
 service-account*.json
+gdrive_client_secret.json
+gdrive_client_secret*.json
+**/credentials/
 
 # Terraform
 **/.terraform/
