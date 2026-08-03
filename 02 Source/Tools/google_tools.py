@@ -1,18 +1,17 @@
 import asyncio
 from io import BytesIO
+import os
 from pathlib import Path
 import threading
 
+from google import genai
 from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2.credentials import Credentials
-from google.genai import types
+from google.genai import errors, types
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-
-from LLM import GeminiError, generate_response
-
 
 google_search_tool = types.Tool(google_search=types.GoogleSearch())
 CREDENTIALS_FOLDER = Path(__file__).with_name("credentials")
@@ -26,6 +25,10 @@ credentials_lock = threading.Lock()
 
 class GoogleDriveError(RuntimeError):
     """Raised when a Google Drive operation cannot be completed."""
+
+
+class GoogleSearchError(RuntimeError):
+    """Raised when the standalone Google Search tool fails."""
 
 
 def _get_drive_service():
@@ -73,24 +76,35 @@ def _get_drive_service():
 
 
 async def google_search(request: str) -> str:
-    """Use a separate Gemini request grounded with Google Search."""
-    response = await generate_response(
-        contents=[
-            {
-                "role": "user",
-                "parts": [{"text": request}],
-            }
-        ],
-        system_instruction=(
-            "Answer the request using Google Search when useful. "
-            "Return a concise, factual response."
-        ),
-        tools=[google_search_tool],
-    )
+    """Use Gemini Google Search without importing the LLM service code."""
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        raise GoogleSearchError(
+            "GEMINI_API_KEY is not configured for the Tools service."
+        )
+
+    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    try:
+        async with genai.Client(api_key=api_key).aio as client:
+            response = await client.models.generate_content(
+                model=model,
+                contents=request,
+                config=types.GenerateContentConfig(
+                    system_instruction=(
+                        "Answer the request using Google Search when useful. "
+                        "Return a concise, factual response."
+                    ),
+                    tools=[google_search_tool],
+                ),
+            )
+    except errors.APIError as exc:
+        raise GoogleSearchError(
+            f"Gemini Google Search failed: {exc.message or exc}"
+        ) from exc
 
     result = response.text.strip() if response.text else ""
     if not result:
-        raise GeminiError("Google Search returned no text response.")
+        raise GoogleSearchError("Google Search returned no text response.")
 
     return result
 
