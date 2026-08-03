@@ -32,6 +32,14 @@ class LLMInvokeResponse(BaseModel):
     tool_calls: list[dict[str, object]]
 
 
+@app.get("/", tags=["General"])
+async def root() -> dict[str, str]:
+    return {
+        "message": "PA Jarvis LLM service is running.",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health", tags=["General"])
 async def health() -> dict[str, str]:
     return {"status": "healthy", "service": "llm-service"}

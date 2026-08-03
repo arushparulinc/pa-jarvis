@@ -38,6 +38,14 @@ class InvokeResponse(BaseModel):
     message: str
 
 
+@app.get("/", tags=["General"])
+async def root() -> dict[str, str]:
+    return {
+        "message": "PA Jarvis Agents service is running.",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health", tags=["General"])
 async def health() -> dict[str, str]:
     return {

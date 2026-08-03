@@ -29,6 +29,14 @@ class ToolExecuteResponse(BaseModel):
     result: object
 
 
+@app.get("/", tags=["General"])
+async def root() -> dict[str, str]:
+    return {
+        "message": "PA Jarvis Tools service is running.",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health", tags=["General"])
 async def health() -> dict[str, str]:
     return {"status": "healthy", "service": "tools-service"}

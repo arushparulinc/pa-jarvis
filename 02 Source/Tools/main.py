@@ -1,6 +1,4 @@
-def main():
-    print("Hello from tools!")
+from tools_http_service import app
 
 
-if __name__ == "__main__":
-    main()
+__all__ = ["app"]
