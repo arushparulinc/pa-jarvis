@@ -1,8 +1,6 @@
 from google.genai import types
 
-from Tools import tool_registry
-
-from . import gemini_client
+from . import gemini_client, tool_registry
 
 
 async def route_chat_message_gemini(
