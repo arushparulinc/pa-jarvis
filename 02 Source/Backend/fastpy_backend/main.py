@@ -1,22 +1,14 @@
 from datetime import UTC, datetime
-from pathlib import Path
-import sys
 from uuid import uuid4
 
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 
-
-SOURCE_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(SOURCE_ROOT))
-load_dotenv(SOURCE_ROOT / "LLM" / ".env")
-
-from Agents import (  # noqa: E402
-    ChatError,
-    route_chat_message,
+from call_master_agent import (
+    MasterAgentServiceError,
+    invoke_master_agent,
 )
 
 
@@ -75,10 +67,10 @@ async def health_check() -> HealthResponse:
 
 @app.post("/api/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat(request: ChatRequest) -> ChatResponse:
-    """Accept a chat message and route it through the local Qwen agent."""
+    """Send a chat message to the master-agent microservice."""
     try:
-        assistant_reply = await route_chat_message(request.message)
-    except ChatError as exc:
+        assistant_reply = await invoke_master_agent(request.message)
+    except MasterAgentServiceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return ChatResponse(
