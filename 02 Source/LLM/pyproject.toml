@@ -5,6 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi[standard]>=0.139.0",
     "google-genai>=2.12.1",
     "ollama>=0.6.2",
+    "python-dotenv>=1.2.2",
+    "uvicorn>=0.51.0",
 ]
+
+[tool.uv]
+package = false

@@ -5,11 +5,7 @@ description = "Master-agent HTTP microservice for PA Jarvis"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.139.0",
-    "google-api-python-client>=2.198.0",
-    "google-auth-httplib2>=0.4.0",
-    "google-auth-oauthlib>=1.4.0",
-    "google-genai>=2.14.0",
-    "ollama>=0.6.2",
+    "httpx>=0.28.1",
     "python-dotenv>=1.2.2",
     "uvicorn>=0.51.0",
 ]

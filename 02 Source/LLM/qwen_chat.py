@@ -1,9 +1,7 @@
 import json
 import logging
 
-from Tools import tool_registry
-
-from . import qwen_client
+from . import qwen_client, tool_registry
 
 
 master_agent_logger = logging.getLogger("pa_jarvis.master_agent")

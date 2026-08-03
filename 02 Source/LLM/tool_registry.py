@@ -1,5 +1,5 @@
-# Keep this registry provider-neutral. The master router converts these tool
-# names and descriptions into the format required by each LLM provider.
+# Keep tool declarations with the LLM service. The Tools service owns only the
+# executable implementations and receives tool names over HTTP.
 TOOLS = [
     {
         "name": "arush_random_facts",
