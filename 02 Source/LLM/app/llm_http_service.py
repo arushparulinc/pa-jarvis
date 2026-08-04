@@ -1,5 +1,4 @@
 from pathlib import Path
-import sys
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -7,11 +6,10 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 
-SOURCE_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(SOURCE_ROOT))
-load_dotenv(Path(__file__).with_name(".env"))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(PROJECT_ROOT / ".env")
 
-from LLM import gemini_chat, gemini_client, qwen_chat, qwen_client  # noqa: E402
+from . import gemini_chat, gemini_client, qwen_chat, qwen_client
 
 
 app = FastAPI(
@@ -63,14 +61,3 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return LLMInvokeResponse(reply=reply, tool_calls=tool_calls)
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(
-        "llm_http_service:app",
-        host="127.0.0.1",
-        port=8002,
-        reload=True,
-    )

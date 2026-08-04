@@ -7,21 +7,7 @@ services:
     environment:
       MASTER_AGENT_URL: http://agents:8001
     depends_on:
-      agents:
-        condition: service_healthy
-    healthcheck:
-      test:
-        - CMD
-        - python
-        - -c
-        - >-
-          import urllib.request;
-          urllib.request.urlopen('http://127.0.0.1:8000/health').read()
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: unless-stopped
+      - agents
 
   agents:
     build:
@@ -32,23 +18,8 @@ services:
       LLM_SERVICE_URL: http://llm:8002
       TOOLS_SERVICE_URL: http://tools:8003
     depends_on:
-      llm:
-        condition: service_healthy
-      tools:
-        condition: service_healthy
-    healthcheck:
-      test:
-        - CMD
-        - python
-        - -c
-        - >-
-          import urllib.request;
-          urllib.request.urlopen('http://127.0.0.1:8001/health').read()
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: unless-stopped
+      - llm
+      - tools
 
   llm:
     build:
@@ -58,21 +29,7 @@ services:
     env_file:
       - ./LLM/.env
     environment:
-      # Ollama runs on the Windows host, outside this container.
       OLLAMA_HOST: http://host.docker.internal:11434
-    healthcheck:
-      test:
-        - CMD
-        - python
-        - -c
-        - >-
-          import urllib.request;
-          urllib.request.urlopen('http://127.0.0.1:8002/health').read()
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: unless-stopped
 
   tools:
     build:
@@ -82,17 +39,4 @@ services:
     env_file:
       - ./Tools/.env
     volumes:
-      - ./Tools/credentials:/app/Tools/credentials
-    healthcheck:
-      test:
-        - CMD
-        - python
-        - -c
-        - >-
-          import urllib.request;
-          urllib.request.urlopen('http://127.0.0.1:8003/health').read()
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: unless-stopped
+      - ./Tools/credentials:/app/credentials
