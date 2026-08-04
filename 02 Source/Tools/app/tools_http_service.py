@@ -1,16 +1,14 @@
 from pathlib import Path
-import sys
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 
-SOURCE_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(SOURCE_ROOT))
-load_dotenv(Path(__file__).with_name(".env"))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(PROJECT_ROOT / ".env")
 
-from Tools import tool_execution  # noqa: E402
+from . import tool_execution
 
 
 app = FastAPI(
@@ -27,6 +25,14 @@ class ToolExecuteRequest(BaseModel):
 
 class ToolExecuteResponse(BaseModel):
     result: object
+
+
+@app.get("/", tags=["General"])
+async def root() -> dict[str, str]:
+    return {
+        "message": "PA Jarvis Tools service is running.",
+        "docs": "/docs",
+    }
 
 
 @app.get("/health", tags=["General"])
@@ -48,14 +54,3 @@ async def execute(request: ToolExecuteRequest) -> ToolExecuteResponse:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return ToolExecuteResponse(result=result)
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(
-        "tools_http_service:app",
-        host="127.0.0.1",
-        port=8003,
-        reload=True,
-    )

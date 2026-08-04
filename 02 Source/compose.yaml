@@ -1,0 +1,42 @@
+services:
+  backend:
+    build:
+      context: ./Backend/fastpy_backend
+    ports:
+      - "8000:8000"
+    environment:
+      MASTER_AGENT_URL: http://agents:8001
+    depends_on:
+      - agents
+
+  agents:
+    build:
+      context: ./Agents
+    ports:
+      - "8001:8001"
+    environment:
+      LLM_SERVICE_URL: http://llm:8002
+      TOOLS_SERVICE_URL: http://tools:8003
+    depends_on:
+      - llm
+      - tools
+
+  llm:
+    build:
+      context: ./LLM
+    ports:
+      - "8002:8002"
+    env_file:
+      - ./LLM/.env
+    environment:
+      OLLAMA_HOST: http://host.docker.internal:11434
+
+  tools:
+    build:
+      context: ./Tools
+    ports:
+      - "8003:8003"
+    env_file:
+      - ./Tools/.env
+    volumes:
+      - ./Tools/credentials:/app/credentials
