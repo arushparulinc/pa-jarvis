@@ -1,4 +1,12 @@
 services:
+  frontend:
+    build:
+      context: ./Frontend/njs_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
   backend:
     build:
       context: ./Backend/fastpy_backend
@@ -29,7 +37,7 @@ services:
     env_file:
       - ./LLM/.env
     environment:
-      OLLAMA_HOST: http://host.docker.internal:11434
+      OLLAMA_HOST: http://192.168.0.30:11434
 
   tools:
     build:
