@@ -1,9 +1,15 @@
 services:
+  revproxy:
+    build:
+      context: ./RevProxy
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+
   frontend:
     build:
       context: ./Frontend/njs_frontend
-    ports:
-      - "5173:80"
     depends_on:
       - backend
 
