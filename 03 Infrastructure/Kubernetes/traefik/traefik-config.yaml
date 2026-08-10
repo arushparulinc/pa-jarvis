@@ -1,0 +1,16 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    persistence:
+      enabled: true
+      name: data
+      size: 128Mi
+      path: /data
+    additionalArguments:
+      - "--certificatesresolvers.letsencrypt.acme.email=arushparulinc@gmail.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
