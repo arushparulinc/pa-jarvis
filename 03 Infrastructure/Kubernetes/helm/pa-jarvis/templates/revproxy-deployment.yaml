@@ -2,12 +2,29 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: revproxy
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+
 spec:
   ingressClassName: traefik
+
+  tls:
+    - hosts:
+        - chat.arushparulinc.com
+
   rules:
     - host: chat.arushparulinc.com
       http:
         paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
+
           - path: /
             pathType: Prefix
             backend:

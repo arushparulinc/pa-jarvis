@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agents
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agents
+  template:
+    metadata:
+      labels:
+        app: agents
+    spec:
+      containers:
+        - name: agents
+          image: 02source-agents:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+          env:
+            - name: LLM_SERVICE_URL
+              value: "http://llm:8002"
+            - name: TOOLS_SERVICE_URL
+              value: "http://tools:8003"
