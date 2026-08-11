@@ -1,4 +1,8 @@
-*
-!dist/
-!dist/**
-!Dockerfile
+node_modules
+dist
+
+.git
+.gitignore
+
+.env
+.env.*
