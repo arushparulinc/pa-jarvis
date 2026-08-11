@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: tools
-          image: 02source-tools:latest
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
+          imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
           ports:
             - containerPort: 8003
