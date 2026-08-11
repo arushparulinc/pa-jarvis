@@ -5,6 +5,11 @@ on:
     branches:
       - dev
 
+    # A deployment PR changes only Helm configuration.
+    # We don't want that merge to rebuild all application images.
+    paths-ignore:
+      - "03 Infrastructure/Kubernetes/helm/**"
+
   workflow_dispatch:
 
 permissions:
@@ -64,38 +69,6 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}:dev
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}:sha-${{ github.sha }}
 
-  update-dev-values:
+  prepare-dev-deployment:
     needs: build-images
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout dev branch
-        uses: actions/checkout@v4
-        with:
-          ref: dev
-
-      - name: Update image tags
-        env:
-          IMAGE_TAG: sha-${{ github.sha }}
-        run: |
-          FILE="03 Infrastructure/Kubernetes/helm/pa-jarvis/values-dev.yaml"
-
-          sed -i "s|tag: sha-[a-f0-9]*|tag: ${IMAGE_TAG}|g" "$FILE"
-
-          echo "Updated image tags:"
-          grep "tag:" "$FILE"
-
-      - name: Commit and push image tags
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add "03 Infrastructure/Kubernetes/helm/pa-jarvis/values-dev.yaml"
-
-          if git diff --cached --quiet; then
-            echo "No image tag changes to commit."
-            exit 0
-          fi
-
-          git commit -m "chore(dev): deploy sha-${{ github.sha }}"
-          git push origin dev
+    uses: ./.github/workflows/dev-deployment.yaml
