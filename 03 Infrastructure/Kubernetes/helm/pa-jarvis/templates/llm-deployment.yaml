@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: llm
-          image: 02source-llm:latest
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.llm.image.repository }}:{{ .Values.llm.image.tag }}"
+          imagePullPolicy: {{ .Values.llm.image.pullPolicy }}
 
           ports:
             - containerPort: 8002

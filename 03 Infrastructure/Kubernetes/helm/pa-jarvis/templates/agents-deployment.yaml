@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: agents
-          image: 02source-agents:latest
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.agents.image.repository }}:{{ .Values.agents.image.tag }}"
+          imagePullPolicy: {{ .Values.agents.image.pullPolicy }}
           ports:
             - containerPort: 8001
           env:

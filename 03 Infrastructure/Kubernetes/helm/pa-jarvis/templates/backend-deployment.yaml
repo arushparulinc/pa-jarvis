@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: backend
-          image: 02source-backend:latest
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
           ports:
             - containerPort: 8000
           env:
