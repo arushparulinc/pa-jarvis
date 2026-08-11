@@ -1,0 +1,49 @@
+name: Prepare Dev Deployment
+
+on:
+  workflow_call:
+
+jobs:
+  prepare-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Create deployment branch from current dev commit
+        run: |
+          git checkout -B dev-deployment "${{ github.sha }}"
+
+      - name: Update values-dev image tags
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: |
+          FILE="03 Infrastructure/Kubernetes/helm/pa-jarvis/values-dev.yaml"
+
+          echo "Updating images to ${IMAGE_TAG}"
+
+          sed -i "s|tag: sha-[a-f0-9]*|tag: ${IMAGE_TAG}|g" "$FILE"
+
+          echo "Updated image tags:"
+          grep "tag:" "$FILE"
+
+      - name: Commit deployment change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add "03 Infrastructure/Kubernetes/helm/pa-jarvis/values-dev.yaml"
+
+          if git diff --cached --quiet; then
+            echo "No image tag changes required."
+          else
+            git commit -m "chore(dev): deploy sha-${{ github.sha }}"
+          fi
+
+      - name: Push deployment branch
+        run: |
+          git push --force origin HEAD:dev-deployment
