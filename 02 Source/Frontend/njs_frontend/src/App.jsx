@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/chat`;
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+const API_URL = `${API_BASE_URL}/api/chat`;
 
 const quickPrompts = [
   "What can you help me with?",
