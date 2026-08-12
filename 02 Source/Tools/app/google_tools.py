@@ -14,7 +14,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 google_search_tool = types.Tool(google_search=types.GoogleSearch())
-CREDENTIALS_FOLDER = Path(__file__).with_name("credentials")
+CREDENTIALS_FOLDER = Path(__file__).resolve().parents[1] / "credentials"
 GDRIVE_CLIENT_SECRET_PATH = (
     CREDENTIALS_FOLDER / "gdrive_client_secret.json"
 )
