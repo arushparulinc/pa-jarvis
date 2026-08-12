@@ -20,4 +20,4 @@ spec:
             - containerPort: 8004
           envFrom:
             - secretRef:
-                name: storage-db-secrets
+                name: storage-db-secret
