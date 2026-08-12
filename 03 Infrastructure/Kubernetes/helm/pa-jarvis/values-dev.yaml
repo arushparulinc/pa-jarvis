@@ -189,3 +189,9 @@ tools:
     repository: ghcr.io/arushparulinc/pa-jarvis-tools
     tag: sha-7a78197df6e9983ee3dfbbc4a3188d1e6794af0b
     pullPolicy: IfNotPresent
+
+storage:
+  image:
+    repository: ghcr.io/arushparulinc/pa-jarvis-storage
+    tag: sha-7a78197df6e9983ee3dfbbc4a3188d1e6794af0b
+    pullPolicy: IfNotPresent

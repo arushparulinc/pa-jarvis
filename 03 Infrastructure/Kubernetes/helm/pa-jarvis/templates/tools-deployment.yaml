@@ -18,3 +18,6 @@ spec:
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
           ports:
             - containerPort: 8003
+          env:
+            - name: STORAGE_SERVICE_URL
+              value: "http://storage:8004"

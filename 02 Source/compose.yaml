@@ -1,15 +1,9 @@
 services:
-  revproxy:
-    build:
-      context: ./RevProxy
-    ports:
-      - "80:80"
-    depends_on:
-      - frontend
-
   frontend:
     build:
       context: ./Frontend/njs_frontend
+    ports:
+      - "5173:80"
     depends_on:
       - backend
 
@@ -18,22 +12,30 @@ services:
       context: ./Backend/fastpy_backend
     ports:
       - "8000:8000"
+    env_file:
+      - ./Backend/fastpy_backend/.env
     environment:
       MASTER_AGENT_URL: http://agents:8001
+      STORAGE_SERVICE_URL: http://storage:8004
     depends_on:
       - agents
+      - storage
 
   agents:
     build:
       context: ./Agents
     ports:
       - "8001:8001"
+    env_file:
+      - ./Agents/.env
     environment:
       LLM_SERVICE_URL: http://llm:8002
       TOOLS_SERVICE_URL: http://tools:8003
+      STORAGE_SERVICE_URL: http://storage:8004
     depends_on:
       - llm
       - tools
+      - storage
 
   llm:
     build:
@@ -44,6 +46,9 @@ services:
       - ./LLM/.env
     environment:
       OLLAMA_HOST: http://192.168.0.30:11434
+      STORAGE_SERVICE_URL: http://storage:8004
+    depends_on:
+      - storage
 
   tools:
     build:
@@ -52,5 +57,17 @@ services:
       - "8003:8003"
     env_file:
       - ./Tools/.env
+    environment:
+      STORAGE_SERVICE_URL: http://storage:8004
     volumes:
       - ./Tools/credentials:/app/credentials
+    depends_on:
+      - storage
+
+  storage:
+    build:
+      context: ./Storage
+    ports:
+      - "8004:8004"
+    env_file:
+      - ./Storage/.env

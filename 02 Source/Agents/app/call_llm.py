@@ -2,6 +2,8 @@ import os
 
 import httpx
 
+from .call_storage import log_event_pgsql
+
 
 DEFAULT_LLM_SERVICE_URL = "http://127.0.0.1:8002"
 DEFAULT_TIMEOUT_SECONDS = 300.0
@@ -12,6 +14,7 @@ class LLMServiceError(RuntimeError):
 
 
 async def invoke_llm(
+    request_id: str,
     provider: str,
     shared_history: list[dict[str, object]],
     system_instruction: str,
@@ -30,10 +33,23 @@ async def invoke_llm(
             response = await client.post(
                 f"{base_url}/invoke",
                 json={
+                    "RequestID": request_id,
                     "provider": provider,
                     "shared_history": shared_history,
                     "system_instruction": system_instruction,
                 },
+            )
+            message = (
+                str(shared_history[-1].get("content", ""))
+                if shared_history
+                else ""
+            )
+            await log_event_pgsql(
+                request_id=request_id,
+                chat_message=message,
+                service_name="agents",
+                script_name="call_llm.py",
+                event_type="llm_invocation",
             )
     except httpx.RequestError as exc:
         raise LLMServiceError(
