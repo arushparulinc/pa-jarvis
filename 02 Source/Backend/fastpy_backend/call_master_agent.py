@@ -1,6 +1,9 @@
 import os
+from uuid import uuid4
 
 import httpx
+
+from call_storage import log_event_pgsql
 
 
 DEFAULT_MASTER_AGENT_URL = "http://127.0.0.1:8001"
@@ -13,6 +16,7 @@ class MasterAgentServiceError(RuntimeError):
 
 async def invoke_master_agent(message: str) -> str:
     """Send a chat message to the master-agent microservice."""
+    request_id = str(uuid4())
     base_url = os.getenv(
         "MASTER_AGENT_URL",
         DEFAULT_MASTER_AGENT_URL,
@@ -28,7 +32,17 @@ async def invoke_master_agent(message: str) -> str:
         async with httpx.AsyncClient(timeout=timeout_seconds) as client:
             response = await client.post(
                 f"{base_url}/invoke",
-                json={"message": message},
+                json={
+                    "RequestID": request_id,
+                    "message": message,
+                },
+            )
+            await log_event_pgsql(
+                request_id=request_id,
+                chat_message=message,
+                service_name="backend",
+                script_name="call_master_agent.py",
+                event_type="agent_invocation",
             )
     except httpx.RequestError as exc:
         raise MasterAgentServiceError(

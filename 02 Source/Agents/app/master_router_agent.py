@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 from . import call_llm, call_tools
+from .call_storage import log_event_pgsql
 
 
 # Resolve the instruction file from this script's location so startup does not
@@ -47,7 +48,7 @@ class ChatError(RuntimeError):
     """Raised when no configured chat provider can return a response."""
 
 
-async def route_chat_message(message: str) -> str:
+async def route_chat_message(request_id: str, message: str) -> str:
     """Manage tool rounds through Qwen first, then fall back to Gemini."""
     # Serialize complete turns so every provider sees a consistent shared
     # history while it is being updated by LLM and tool responses.
@@ -66,18 +67,34 @@ async def route_chat_message(message: str) -> str:
                 if provider == "qwen":
                     assistant_reply, tool_calls = (
                         await call_llm.invoke_llm(
+                            request_id,
                             "qwen",
                             chat_history,
                             SYSTEM_INSTRUCTION,
                         )
                     )
+                    await log_event_pgsql(
+                        request_id=request_id,
+                        chat_message=message,
+                        service_name="agents",
+                        script_name="master_router_agent.py",
+                        event_type="llm_response",
+                    )
                 else:
                     assistant_reply, tool_calls = (
                         await call_llm.invoke_llm(
+                            request_id,
                             "gemini",
                             chat_history,
                             SYSTEM_INSTRUCTION,
                         )
+                    )
+                    await log_event_pgsql(
+                        request_id=request_id,
+                        chat_message=message,
+                        service_name="agents",
+                        script_name="master_router_agent.py",
+                        event_type="llm_response",
                     )
 
                 if not tool_calls:
@@ -119,8 +136,19 @@ async def route_chat_message(message: str) -> str:
                     tool_name = str(tool_call["name"])
                     try:
                         result = await call_tools.execute_tool(
+                            request_id,
                             tool_name,
                             tool_call.get("arguments", {}),
+                        )
+                        await log_event_pgsql(
+                            request_id=request_id,
+                            chat_message=(
+                                f"Tool {tool_name}: "
+                                f"{tool_call.get('arguments', {})}"
+                            ),
+                            service_name="agents",
+                            script_name="master_router_agent.py",
+                            event_type="tool_result",
                         )
                         tool_result = {"result": result}
                     except Exception as exc:
@@ -152,7 +180,8 @@ async def route_chat_message(message: str) -> str:
                 ) from llm_error
 
         master_agent_logger.info(
-            "route_chat_message output=%s",
+            "RequestID=%s route_chat_message output=%s",
+            request_id,
             assistant_reply,
         )
         return assistant_reply

@@ -21,3 +21,5 @@ spec:
           env:
             - name: MASTER_AGENT_URL
               value: "http://agents:8001"
+            - name: STORAGE_SERVICE_URL
+              value: "http://storage:8004"

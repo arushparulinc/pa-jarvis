@@ -46,6 +46,10 @@ jobs:
             context: "02 Source/Tools"
             image: pa-jarvis-tools
 
+          - service: storage
+            context: "02 Source/Storage"
+            image: pa-jarvis-storage
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

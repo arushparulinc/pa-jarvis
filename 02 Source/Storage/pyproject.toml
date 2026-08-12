@@ -1,14 +1,14 @@
 [project]
-name = "fastpy-backend"
+name = "pa-jarvis-storage"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "PostgreSQL event storage microservice for PA Jarvis"
 requires-python = ">=3.13"
 dependencies = [
+    "asyncpg>=0.31.0",
     "fastapi[standard]>=0.139.0",
-    "httpx>=0.28.1",
-    "pydantic>=2.13.4",
     "python-dotenv>=1.2.2",
-    "sqlalchemy>=2.0.51",
     "uvicorn>=0.51.0",
 ]
+
+[tool.uv]
+package = false
