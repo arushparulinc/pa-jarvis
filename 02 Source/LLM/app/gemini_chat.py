@@ -1,16 +1,15 @@
 from google.genai import types
 
-from . import gemini_client, tool_registry
+from . import gemini_client, system_instructions, tools_registry
 
 
 async def route_chat_message_gemini(
     shared_history: list[dict[str, object]],
-    system_instruction: str,
 ) -> tuple[str, list[dict[str, object]]]:
     """Make one Gemini request and return provider-neutral output."""
     # Convert the generic registry entries into Gemini tool definitions.
     gemini_tools = []
-    for tool in tool_registry.get_all_tools():
+    for tool in tools_registry.get_all_tools():
         parameters = tool["parameters"]
         parameter_schema: dict[str, object] = {
             "type": "object",
@@ -81,6 +80,7 @@ async def route_chat_message_gemini(
             )
         )
 
+    system_instruction = system_instructions.get_system_instructions()
     response = await gemini_client.generate_response(
         contents=gemini_history,
         system_instruction=system_instruction,

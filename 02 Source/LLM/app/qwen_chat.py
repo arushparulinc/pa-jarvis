@@ -1,7 +1,7 @@
 import json
 import logging
 
-from . import qwen_client, tool_registry
+from . import qwen_client, system_instructions, tools_registry
 
 
 master_agent_logger = logging.getLogger("pa_jarvis.master_agent")
@@ -9,12 +9,11 @@ master_agent_logger = logging.getLogger("pa_jarvis.master_agent")
 
 async def route_chat_message_qwen(
     shared_history: list[dict[str, object]],
-    system_instruction: str,
 ) -> tuple[str, list[dict[str, object]]]:
     """Make one Qwen request and return provider-neutral output."""
     # Convert the generic registry entries into Ollama tool definitions.
     qwen_tools = []
-    for tool in tool_registry.get_all_tools():
+    for tool in tools_registry.get_all_tools():
         parameters = tool["parameters"]
         parameter_schema: dict[str, object] = {
             "type": "object",
@@ -70,6 +69,7 @@ async def route_chat_message_qwen(
             )
         qwen_history.append(qwen_item)
 
+    system_instruction = system_instructions.get_system_instructions()
     response = await qwen_client.generate_response(
         messages=qwen_history,
         system_instruction=system_instruction,

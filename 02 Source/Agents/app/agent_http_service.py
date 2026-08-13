@@ -63,6 +63,9 @@ async def invoke(request: InvokeRequest) -> InvokeResponse:
             service_name="agents",
             script_name="agent_http_service.py",
             event_type="call_master_router",
+            chat_history=[
+                {"role": "user", "content": request.message}
+            ],
         )
         assistant_reply = await route_chat_message(
             str(request.request_id),

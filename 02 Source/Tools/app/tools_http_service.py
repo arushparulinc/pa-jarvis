@@ -24,6 +24,7 @@ class ToolExecuteRequest(BaseModel):
     request_id: UUID = Field(alias="RequestID")
     name: str = Field(min_length=1)
     arguments: dict[str, object] = Field(default_factory=dict)
+    chat_history: list[dict[str, object]] = Field(default_factory=list)
 
 
 class ToolExecuteResponse(BaseModel):
@@ -53,6 +54,7 @@ async def execute(request: ToolExecuteRequest) -> ToolExecuteResponse:
             service_name="tools",
             script_name="tools_http_service.py",
             event_type=f"Use_Tool_{request.name}",
+            chat_history=request.chat_history,
         )
         result = await tool_execution.execute_tool(
             request.name,
