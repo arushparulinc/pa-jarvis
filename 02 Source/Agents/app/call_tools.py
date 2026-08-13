@@ -2,6 +2,8 @@ import os
 
 import httpx
 
+from .call_storage import log_event_pgsql
+
 
 DEFAULT_TOOLS_SERVICE_URL = "http://127.0.0.1:8003"
 DEFAULT_TIMEOUT_SECONDS = 300.0
@@ -12,6 +14,7 @@ class ToolsServiceError(RuntimeError):
 
 
 async def execute_tool(
+    request_id: str,
     name: str,
     arguments: dict[str, object] | None = None,
 ) -> object:
@@ -28,10 +31,21 @@ async def execute_tool(
     )
 
     try:
+        await log_event_pgsql(
+            request_id=request_id,
+            chat_message=f"Tool {name}: {arguments or {}}",
+            service_name="agents",
+            script_name="call_tools.py",
+            event_type="call_tools",
+        )
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 f"{base_url}/execute",
-                json={"name": name, "arguments": arguments or {}},
+                json={
+                    "RequestID": request_id,
+                    "name": name,
+                    "arguments": arguments or {},
+                },
             )
     except httpx.RequestError as exc:
         raise ToolsServiceError(

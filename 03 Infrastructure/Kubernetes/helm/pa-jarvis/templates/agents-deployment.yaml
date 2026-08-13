@@ -23,3 +23,5 @@ spec:
               value: "http://llm:8002"
             - name: TOOLS_SERVICE_URL
               value: "http://tools:8003"
+            - name: STORAGE_SERVICE_URL
+              value: "http://storage:8004"
