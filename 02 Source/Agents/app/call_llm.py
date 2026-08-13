@@ -17,7 +17,6 @@ async def invoke_llm(
     request_id: str,
     provider: str,
     shared_history: list[dict[str, object]],
-    system_instruction: str,
 ) -> tuple[str, list[dict[str, object]]]:
     """Invoke Qwen or Gemini through the independent LLM service."""
     base_url = os.getenv(
@@ -40,6 +39,7 @@ async def invoke_llm(
             service_name="agents",
             script_name="call_llm.py",
             event_type="call_llm",
+            chat_history=shared_history,
         )
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
@@ -48,7 +48,6 @@ async def invoke_llm(
                     "RequestID": request_id,
                     "provider": provider,
                     "shared_history": shared_history,
-                    "system_instruction": system_instruction,
                 },
             )
     except httpx.RequestError as exc:

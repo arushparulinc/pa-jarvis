@@ -26,6 +26,7 @@ class LogEventRequest(BaseModel):
     script_name: str
     event_type: str
     chat_message: str
+    chat_history: list[dict[str, object]]
     created_at: datetime
 
 
@@ -55,6 +56,7 @@ async def log_event(request: LogEventRequest) -> LogEventResponse:
             request.script_name,
             request.event_type,
             request.chat_message,
+            request.chat_history,
             request.created_at,
         )
     except Exception as exc:

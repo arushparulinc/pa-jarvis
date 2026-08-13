@@ -30,3 +30,6 @@ spec:
                 secretKeyRef:
                   name: llm-secrets
                   key: GEMINI_API_KEY
+          envFrom:
+            - secretRef:
+                name: storage-db-secrets

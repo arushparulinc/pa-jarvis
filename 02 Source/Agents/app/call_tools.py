@@ -17,6 +17,7 @@ async def execute_tool(
     request_id: str,
     name: str,
     arguments: dict[str, object] | None = None,
+    chat_history: list[dict[str, object]] | None = None,
 ) -> object:
     """Execute one named tool through the independent Tools service."""
     base_url = os.getenv(
@@ -37,6 +38,7 @@ async def execute_tool(
             service_name="agents",
             script_name="call_tools.py",
             event_type="call_tools",
+            chat_history=chat_history or [],
         )
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
@@ -45,6 +47,7 @@ async def execute_tool(
                     "RequestID": request_id,
                     "name": name,
                     "arguments": arguments or {},
+                    "chat_history": chat_history or [],
                 },
             )
     except httpx.RequestError as exc:

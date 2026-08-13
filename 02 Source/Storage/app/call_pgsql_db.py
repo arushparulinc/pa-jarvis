@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime
 
@@ -10,6 +11,7 @@ async def log_event_pgsql(
     script_name: str,
     event_type: str,
     chat_message: str,
+    chat_history: list[dict[str, object]],
     created_at: datetime,
 ) -> None:
     """Insert one event into the PA Jarvis service-events table."""
@@ -29,15 +31,17 @@ async def log_event_pgsql(
                 script_name,
                 event_type,
                 chat_message,
+                chat_history,
                 created_at
             )
-            VALUES ($1::uuid, $2, $3, $4, $5, $6)
+            VALUES ($1::uuid, $2, $3, $4, $5, $6::jsonb, $7)
             """,
             request_id,
             service_name,
             script_name,
             event_type,
             chat_message,
+            json.dumps(chat_history, default=str),
             created_at,
         )
     except asyncpg.UndefinedTableError as exc:
