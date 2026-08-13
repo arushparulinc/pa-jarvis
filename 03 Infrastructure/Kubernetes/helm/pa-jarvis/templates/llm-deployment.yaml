@@ -23,6 +23,8 @@ spec:
           env:
             - name: STORAGE_SERVICE_URL
               value: "http://storage:8004"
+            - name: OLLAMA_HOST
+              value: "http://192.168.0.30:11434"
             - name: GEMINI_API_KEY
               valueFrom:
                 secretKeyRef:
