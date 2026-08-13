@@ -57,16 +57,16 @@ async def health() -> dict[str, str]:
 async def invoke(request: InvokeRequest) -> InvokeResponse:
     """Invoke the master router with one user message."""
     try:
-        assistant_reply = await route_chat_message(
-            str(request.request_id),
-            request.message,
-        )
         await log_event_pgsql(
             request_id=str(request.request_id),
             chat_message=request.message,
             service_name="agents",
             script_name="agent_http_service.py",
-            event_type="chat_request",
+            event_type="call_master_router",
+        )
+        assistant_reply = await route_chat_message(
+            str(request.request_id),
+            request.message,
         )
     except ChatError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc

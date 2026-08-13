@@ -31,6 +31,13 @@ async def execute_tool(
     )
 
     try:
+        await log_event_pgsql(
+            request_id=request_id,
+            chat_message=f"Tool {name}: {arguments or {}}",
+            service_name="agents",
+            script_name="call_tools.py",
+            event_type="call_tools",
+        )
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 f"{base_url}/execute",
@@ -39,13 +46,6 @@ async def execute_tool(
                     "name": name,
                     "arguments": arguments or {},
                 },
-            )
-            await log_event_pgsql(
-                request_id=request_id,
-                chat_message=f"Tool {name}: {arguments or {}}",
-                service_name="agents",
-                script_name="call_tools.py",
-                event_type="tool_invocation",
             )
     except httpx.RequestError as exc:
         raise ToolsServiceError(
