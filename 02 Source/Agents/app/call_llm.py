@@ -29,6 +29,18 @@ async def invoke_llm(
     )
 
     try:
+        message = (
+            str(shared_history[-1].get("content", ""))
+            if shared_history
+            else ""
+        )
+        await log_event_pgsql(
+            request_id=request_id,
+            chat_message=message,
+            service_name="agents",
+            script_name="call_llm.py",
+            event_type="call_llm",
+        )
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 f"{base_url}/invoke",
@@ -38,18 +50,6 @@ async def invoke_llm(
                     "shared_history": shared_history,
                     "system_instruction": system_instruction,
                 },
-            )
-            message = (
-                str(shared_history[-1].get("content", ""))
-                if shared_history
-                else ""
-            )
-            await log_event_pgsql(
-                request_id=request_id,
-                chat_message=message,
-                service_name="agents",
-                script_name="call_llm.py",
-                event_type="llm_invocation",
             )
     except httpx.RequestError as exc:
         raise LLMServiceError(

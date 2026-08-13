@@ -50,16 +50,6 @@ async def health() -> dict[str, str]:
 async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
     """Invoke the requested LLM provider once."""
     try:
-        if request.provider == "qwen":
-            reply, tool_calls = await qwen_chat.route_chat_message_qwen(
-                request.shared_history,
-                request.system_instruction,
-            )
-        else:
-            reply, tool_calls = await gemini_chat.route_chat_message_gemini(
-                request.shared_history,
-                request.system_instruction,
-            )
         message = (
             str(request.shared_history[-1].get("content", ""))
             if request.shared_history
@@ -70,8 +60,18 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
             chat_message=message,
             service_name="llm",
             script_name="llm_http_service.py",
-            event_type="llm_response",
+            event_type=f"Use_LLM_{request.provider}",
         )
+        if request.provider == "qwen":
+            reply, tool_calls = await qwen_chat.route_chat_message_qwen(
+                request.shared_history,
+                request.system_instruction,
+            )
+        else:
+            reply, tool_calls = await gemini_chat.route_chat_message_gemini(
+                request.shared_history,
+                request.system_instruction,
+            )
     except (qwen_client.QwenError, gemini_client.GeminiError) as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 

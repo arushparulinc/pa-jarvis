@@ -47,16 +47,16 @@ async def health() -> dict[str, str]:
 async def execute(request: ToolExecuteRequest) -> ToolExecuteResponse:
     """Execute one tool by its registered function name."""
     try:
-        result = await tool_execution.execute_tool(
-            request.name,
-            request.arguments,
-        )
         await log_event_pgsql(
             request_id=str(request.request_id),
             chat_message=f"Tool {request.name}: {request.arguments}",
             service_name="tools",
             script_name="tools_http_service.py",
-            event_type="tool_execution",
+            event_type=f"Use_Tool_{request.name}",
+        )
+        result = await tool_execution.execute_tool(
+            request.name,
+            request.arguments,
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

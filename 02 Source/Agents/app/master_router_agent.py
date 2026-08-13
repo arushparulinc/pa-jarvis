@@ -65,6 +65,13 @@ async def route_chat_message(request_id: str, message: str) -> str:
         while True:
             try:
                 if provider == "qwen":
+                    await log_event_pgsql(
+                        request_id=request_id,
+                        chat_message=message,
+                        service_name="agents",
+                        script_name="master_router_agent.py",
+                        event_type="call_llm_wrapper",
+                    )
                     assistant_reply, tool_calls = (
                         await call_llm.invoke_llm(
                             request_id,
@@ -73,14 +80,14 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             SYSTEM_INSTRUCTION,
                         )
                     )
+                else:
                     await log_event_pgsql(
                         request_id=request_id,
                         chat_message=message,
                         service_name="agents",
                         script_name="master_router_agent.py",
-                        event_type="llm_response",
+                        event_type="call_llm_wrapper",
                     )
-                else:
                     assistant_reply, tool_calls = (
                         await call_llm.invoke_llm(
                             request_id,
@@ -88,13 +95,6 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             chat_history,
                             SYSTEM_INSTRUCTION,
                         )
-                    )
-                    await log_event_pgsql(
-                        request_id=request_id,
-                        chat_message=message,
-                        service_name="agents",
-                        script_name="master_router_agent.py",
-                        event_type="llm_response",
                     )
 
                 if not tool_calls:
@@ -135,11 +135,6 @@ async def route_chat_message(request_id: str, message: str) -> str:
                 for tool_call in tool_calls:
                     tool_name = str(tool_call["name"])
                     try:
-                        result = await call_tools.execute_tool(
-                            request_id,
-                            tool_name,
-                            tool_call.get("arguments", {}),
-                        )
                         await log_event_pgsql(
                             request_id=request_id,
                             chat_message=(
@@ -148,7 +143,12 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             ),
                             service_name="agents",
                             script_name="master_router_agent.py",
-                            event_type="tool_result",
+                            event_type="call_tools_wrapper",
+                        )
+                        result = await call_tools.execute_tool(
+                            request_id,
+                            tool_name,
+                            tool_call.get("arguments", {}),
                         )
                         tool_result = {"result": result}
                     except Exception as exc:

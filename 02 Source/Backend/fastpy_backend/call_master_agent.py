@@ -29,6 +29,13 @@ async def invoke_master_agent(message: str) -> str:
     )
 
     try:
+        await log_event_pgsql(
+            request_id=request_id,
+            chat_message=message,
+            service_name="backend",
+            script_name="call_master_agent.py",
+            event_type="call_agent",
+        )
         async with httpx.AsyncClient(timeout=timeout_seconds) as client:
             response = await client.post(
                 f"{base_url}/invoke",
@@ -36,13 +43,6 @@ async def invoke_master_agent(message: str) -> str:
                     "RequestID": request_id,
                     "message": message,
                 },
-            )
-            await log_event_pgsql(
-                request_id=request_id,
-                chat_message=message,
-                service_name="backend",
-                script_name="call_master_agent.py",
-                event_type="agent_invocation",
             )
     except httpx.RequestError as exc:
         raise MasterAgentServiceError(
