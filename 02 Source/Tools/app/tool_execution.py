@@ -1,14 +1,15 @@
 import inspect
 
-from . import google_tools
-from . import personal_tools
+from . import comm_tools, gdrive_tools, internet_tools, personal_tools
 
 
 # List every module that is allowed to expose executable tools. Add future
-# modules such as google_tools or cloud_tools here.
+# modules here so their public functions can be executed by name.
 tool_modules = [
     personal_tools,
-    google_tools,
+    gdrive_tools,
+    internet_tools,
+    comm_tools,
 ]
 
 
