@@ -5,6 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import asyncpg
+from dotenv import load_dotenv
 
 
 class ToolsRegistryError(RuntimeError):
@@ -12,6 +13,7 @@ class ToolsRegistryError(RuntimeError):
 
 
 TOOLS_REGISTRY_FILE = Path(__file__).resolve().parents[1] / "tools_registry.txt"
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 
 async def refresh_tools_registry() -> None:
@@ -130,10 +132,6 @@ def get_all_tools(calling_agent: str) -> list[dict[str, object]]:
         for tool in _get_cached_tools()
         if str(tool.get("agent_name", "")).strip().casefold() == requested_name
     ]
-    if not tools:
-        raise ToolsRegistryError(
-            f"No tools were found for agent '{calling_agent}'."
-        )
     return tools
 
 
