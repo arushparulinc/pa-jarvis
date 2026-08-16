@@ -10,7 +10,14 @@ from pydantic import BaseModel, Field
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
 
-from . import gemini_chat, gemini_client, qwen_chat, qwen_client
+from . import (
+    gemini_chat,
+    gemini_client,
+    qwen_chat,
+    qwen_client,
+    system_instructions,
+    tools_registry,
+)
 from .call_storage import log_event_pgsql
 
 
@@ -25,7 +32,6 @@ class LLMInvokeRequest(BaseModel):
     request_id: UUID = Field(alias="RequestID")
     provider: Literal["qwen", "gemini"]
     shared_history: list[dict[str, object]]
-    system_instruction: str = Field(min_length=1)
 
 
 class LLMInvokeResponse(BaseModel):
@@ -61,18 +67,22 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
             service_name="llm",
             script_name="llm_http_service.py",
             event_type=f"Use_LLM_{request.provider}",
+            chat_history=request.shared_history,
         )
         if request.provider == "qwen":
             reply, tool_calls = await qwen_chat.route_chat_message_qwen(
                 request.shared_history,
-                request.system_instruction,
             )
         else:
             reply, tool_calls = await gemini_chat.route_chat_message_gemini(
                 request.shared_history,
-                request.system_instruction,
             )
-    except (qwen_client.QwenError, gemini_client.GeminiError) as exc:
+    except (
+        qwen_client.QwenError,
+        gemini_client.GeminiError,
+        system_instructions.SystemInstructionError,
+        tools_registry.ToolsRegistryError,
+    ) as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return LLMInvokeResponse(reply=reply, tool_calls=tool_calls)

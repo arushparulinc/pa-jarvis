@@ -14,6 +14,7 @@ async def log_event_pgsql(
     service_name: str,
     script_name: str,
     event_type: str,
+    chat_history: list[dict[str, object]],
     created_at: datetime | None = None,
 ) -> bool:
     """Send one event to the independent Storage service."""
@@ -27,6 +28,7 @@ async def log_event_pgsql(
         "service_name": service_name,
         "script_name": script_name,
         "event_type": event_type,
+        "chat_history": chat_history,
         "created_at": (created_at or datetime.now(UTC)).isoformat(),
     }
 

@@ -6,11 +6,6 @@ from . import call_llm, call_tools
 from .call_storage import log_event_pgsql
 
 
-# Resolve the instruction file from this script's location so startup does not
-# depend on the directory from which FastAPI was launched.
-SYSTEM_INSTRUCTION_PATH = Path(__file__).with_name("LLM_System_Instructions.txt")
-SYSTEM_INSTRUCTION = SYSTEM_INSTRUCTION_PATH.read_text(encoding="utf-8").strip()
-
 # Write master-router events to a dedicated file beside this module. Avoid
 # adding the same handler more than once when Uvicorn reloads the application.
 MASTER_AGENT_LOG_PATH = Path(__file__).with_name("master_agent.log")
@@ -71,13 +66,13 @@ async def route_chat_message(request_id: str, message: str) -> str:
                         service_name="agents",
                         script_name="master_router_agent.py",
                         event_type="call_llm_wrapper",
+                        chat_history=chat_history,
                     )
                     assistant_reply, tool_calls = (
                         await call_llm.invoke_llm(
                             request_id,
                             "qwen",
                             chat_history,
-                            SYSTEM_INSTRUCTION,
                         )
                     )
                 else:
@@ -87,13 +82,13 @@ async def route_chat_message(request_id: str, message: str) -> str:
                         service_name="agents",
                         script_name="master_router_agent.py",
                         event_type="call_llm_wrapper",
+                        chat_history=chat_history,
                     )
                     assistant_reply, tool_calls = (
                         await call_llm.invoke_llm(
                             request_id,
                             "gemini",
                             chat_history,
-                            SYSTEM_INSTRUCTION,
                         )
                     )
 
@@ -144,11 +139,13 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             service_name="agents",
                             script_name="master_router_agent.py",
                             event_type="call_tools_wrapper",
+                            chat_history=chat_history,
                         )
                         result = await call_tools.execute_tool(
                             request_id,
                             tool_name,
                             tool_call.get("arguments", {}),
+                            chat_history,
                         )
                         tool_result = {"result": result}
                     except Exception as exc:
