@@ -2,7 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from . import call_llm, call_tools
+from . import call_llm, call_sub_agent
 from .call_storage import log_event_pgsql
 
 
@@ -73,6 +73,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             request_id,
                             "qwen",
                             chat_history,
+                            "Master Router Agent",
                         )
                     )
                 else:
@@ -89,6 +90,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             request_id,
                             "gemini",
                             chat_history,
+                            "Master Router Agent",
                         )
                     )
 
@@ -138,14 +140,13 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             ),
                             service_name="agents",
                             script_name="master_router_agent.py",
-                            event_type="call_tools_wrapper",
+                            event_type="call_sub_agent",
                             chat_history=chat_history,
                         )
-                        result = await call_tools.execute_tool(
+                        result = await call_sub_agent.execute_agent_actions(
                             request_id,
                             tool_name,
-                            tool_call.get("arguments", {}),
-                            chat_history,
+                            message,
                         )
                         tool_result = {"result": result}
                     except Exception as exc:

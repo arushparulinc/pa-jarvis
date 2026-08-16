@@ -32,6 +32,7 @@ class LLMInvokeRequest(BaseModel):
     request_id: UUID = Field(alias="RequestID")
     provider: Literal["qwen", "gemini"]
     shared_history: list[dict[str, object]]
+    calling_agent: str = Field(min_length=1, max_length=100)
 
 
 class LLMInvokeResponse(BaseModel):
@@ -72,10 +73,12 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
         if request.provider == "qwen":
             reply, tool_calls = await qwen_chat.route_chat_message_qwen(
                 request.shared_history,
+                request.calling_agent,
             )
         else:
             reply, tool_calls = await gemini_chat.route_chat_message_gemini(
                 request.shared_history,
+                request.calling_agent,
             )
     except (
         qwen_client.QwenError,
