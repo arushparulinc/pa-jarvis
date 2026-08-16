@@ -5,6 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import asyncpg
+from dotenv import load_dotenv
 
 
 class SystemInstructionError(RuntimeError):
@@ -14,6 +15,7 @@ class SystemInstructionError(RuntimeError):
 SYSTEM_INSTRUCTIONS_FILE = (
     Path(__file__).resolve().parents[1] / "system_instructions.txt"
 )
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 
 async def refresh_system_instructions() -> None:
