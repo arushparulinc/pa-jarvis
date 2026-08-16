@@ -33,6 +33,9 @@ async def refresh_tools_registry() -> None:
         rows = await connection.fetch(
             """
             SELECT
+                tr.agent_id,
+                a.agent_name,
+                a.agent_description,
                 tr.tool_id,
                 tr.tool_name,
                 tr.tool_description,
@@ -41,9 +44,11 @@ async def refresh_tools_registry() -> None:
                 tp.param_description,
                 tp.is_required
             FROM tools_registry AS tr
+            INNER JOIN agents AS a
+                ON a.agent_id = tr.agent_id
             LEFT JOIN tools_parameters AS tp
                 ON tp.tool_id = tr.tool_id
-            ORDER BY tr.tool_id, tp.param_name NULLS LAST
+            ORDER BY tr.agent_id, tr.tool_id, tp.param_name NULLS LAST
             """
         )
     except asyncpg.UndefinedTableError as exc:
@@ -69,6 +74,8 @@ async def refresh_tools_registry() -> None:
         tool = tools_by_id.setdefault(
             tool_id,
             {
+                "agent_id": str(row["agent_id"]),
+                "agent_name": str(row["agent_name"]).strip(),
                 "name": str(row["tool_name"]).strip(),
                 "description": str(row["tool_description"]).strip(),
                 "parameters": [],
@@ -99,7 +106,7 @@ async def refresh_tools_registry() -> None:
 
 
 @lru_cache(maxsize=1)
-def get_all_tools() -> list[dict[str, object]]:
+def _get_cached_tools() -> list[dict[str, object]]:
     """Read the startup-generated tool registry cache once."""
     try:
         tools = json.loads(TOOLS_REGISTRY_FILE.read_text(encoding="utf-8"))
@@ -111,6 +118,21 @@ def get_all_tools() -> list[dict[str, object]]:
     if not isinstance(tools, list) or not tools:
         raise ToolsRegistryError(
             f"Tool-registry cache '{TOOLS_REGISTRY_FILE}' is empty or invalid."
+        )
+    return tools
+
+
+def get_all_tools(calling_agent: str) -> list[dict[str, object]]:
+    """Return cached tool definitions belonging to one calling agent."""
+    requested_name = calling_agent.strip().casefold()
+    tools = [
+        tool
+        for tool in _get_cached_tools()
+        if str(tool.get("agent_name", "")).strip().casefold() == requested_name
+    ]
+    if not tools:
+        raise ToolsRegistryError(
+            f"No tools were found for agent '{calling_agent}'."
         )
     return tools
 
