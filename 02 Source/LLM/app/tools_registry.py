@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re
 from functools import lru_cache
 from pathlib import Path
 
@@ -14,6 +15,48 @@ class ToolsRegistryError(RuntimeError):
 
 TOOLS_REGISTRY_FILE = Path(__file__).resolve().parents[1] / "tools_registry.txt"
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+
+SCHEMA_TYPE_MAP = {
+    "array": "array",
+    "bigint": "integer",
+    "bool": "boolean",
+    "boolean": "boolean",
+    "character varying": "string",
+    "decimal": "number",
+    "dict": "object",
+    "double": "number",
+    "float": "number",
+    "int": "integer",
+    "integer": "integer",
+    "json": "object",
+    "jsonb": "object",
+    "list": "array",
+    "number": "number",
+    "numeric": "number",
+    "object": "object",
+    "smallint": "integer",
+    "str": "string",
+    "string": "string",
+    "text": "string",
+    "varchar": "string",
+}
+
+
+def _normalize_identifier(value: object) -> str:
+    """Convert a database label into an LLM function-safe identifier."""
+    identifier = re.sub(r"[^A-Za-z0-9_-]+", "_", str(value).strip())
+    return identifier.strip("_").lower()
+
+
+def _normalize_schema_type(value: object) -> str:
+    """Convert a database parameter type into a JSON Schema type."""
+    database_type = str(value).strip().casefold()
+    schema_type = SCHEMA_TYPE_MAP.get(database_type)
+    if schema_type is None:
+        raise ToolsRegistryError(
+            f"Unsupported tool parameter type: {value!r}."
+        )
+    return schema_type
 
 
 async def refresh_tools_registry() -> None:
@@ -78,7 +121,7 @@ async def refresh_tools_registry() -> None:
             {
                 "agent_id": str(row["agent_id"]),
                 "agent_name": str(row["agent_name"]).strip(),
-                "name": str(row["tool_name"]).strip(),
+                "name": _normalize_identifier(row["tool_name"]),
                 "description": str(row["tool_description"]).strip(),
                 "parameters": [],
             },
@@ -90,8 +133,8 @@ async def refresh_tools_registry() -> None:
                 raise ToolsRegistryError("Invalid reconstructed parameter list.")
             parameters.append(
                 {
-                    "name": str(row["param_name"]).strip(),
-                    "type": str(row["param_type"]).strip(),
+                    "name": _normalize_identifier(row["param_name"]),
+                    "type": _normalize_schema_type(row["param_type"]),
                     "description": str(row["param_description"]).strip(),
                     "required": bool(row["is_required"]),
                 }
