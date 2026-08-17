@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
 
-from .call_pgsql_db import log_event_pgsql
+from .call_pgsql_db import log_event_pgsql, log_llm_call_pgsql
 
 
 app = FastAPI(
@@ -32,6 +32,13 @@ class LogEventRequest(BaseModel):
 
 class LogEventResponse(BaseModel):
     logged: bool
+
+
+class LogLLMCallRequest(BaseModel):
+    request_id: UUID = Field(alias="RequestID")
+    calling_agent_name: str = Field(min_length=1, max_length=100)
+    message_sent: str
+    message_response: str
 
 
 @app.get("/", tags=["General"])
@@ -58,6 +65,20 @@ async def log_event(request: LogEventRequest) -> LogEventResponse:
             request.chat_message,
             request.chat_history,
             request.created_at,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return LogEventResponse(logged=True)
+
+
+@app.post("/log-llm-call", response_model=LogEventResponse, tags=["Storage"])
+async def log_llm_call(request: LogLLMCallRequest) -> LogEventResponse:
+    try:
+        await log_llm_call_pgsql(
+            str(request.request_id),
+            request.calling_agent_name,
+            request.message_sent,
+            request.message_response,
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
