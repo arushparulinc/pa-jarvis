@@ -1,7 +1,9 @@
+import json
+
 from google.genai import types
 
 from . import gemini_client, system_instructions, tools_registry
-from .call_storage import log_event_pgsql
+from .call_storage import log_event_pgsql, log_llm_call_pgsql
 
 
 async def route_chat_message_gemini(
@@ -105,6 +107,22 @@ async def route_chat_message_gemini(
         system_instruction=system_instruction,
         tools=gemini_tools,
         chat_history=shared_history,
+    )
+    await log_llm_call_pgsql(
+        request_id=request_id,
+        calling_agent_name=calling_agent,
+        message_sent=json.dumps(
+            {
+                "chat_history": shared_history,
+                "system_instructions": system_instruction,
+                "tools": [
+                    tool.model_dump(mode="json", exclude_none=True)
+                    for tool in gemini_tools
+                ],
+            },
+            default=str,
+        ),
+        message_response=response.model_dump_json(exclude_none=True),
     )
     reply = response.text.strip() if response.text else ""
     tool_calls = [
