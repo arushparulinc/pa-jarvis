@@ -2,12 +2,14 @@ import json
 import logging
 
 from . import qwen_client, system_instructions, tools_registry
+from .call_storage import log_event_pgsql
 
 
 master_agent_logger = logging.getLogger("pa_jarvis.master_agent")
 
 
 async def route_chat_message_qwen(
+    request_id: str,
     shared_history: list[dict[str, object]],
     calling_agent: str,
 ) -> tuple[str, list[dict[str, object]]]:
@@ -73,10 +75,25 @@ async def route_chat_message_qwen(
     system_instruction = system_instructions.get_system_instructions(
         calling_agent
     )
+    chat_message = (
+        str(shared_history[-1].get("content", ""))
+        if shared_history
+        else ""
+    )
+    await log_event_pgsql(
+        request_id=request_id,
+        chat_message=chat_message,
+        service_name="llm",
+        script_name="qwen_chat.py",
+        event_type="call_qwen_client",
+        chat_history=shared_history,
+    )
     response = await qwen_client.generate_response(
+        request_id=request_id,
         messages=qwen_history,
         system_instruction=system_instruction,
         tools=qwen_tools,
+        chat_history=shared_history,
     )
     master_agent_logger.info(
         "generate_qwen_response output=%s",

@@ -10,6 +10,8 @@ from ollama import (
     Tool,
 )
 
+from .call_storage import log_event_pgsql
+
 
 # Ollama's official Qwen3 8B model tag. Override these values in the environment
 # when Ollama runs on another machine or under a different model alias.
@@ -35,9 +37,11 @@ class QwenAPIError(QwenError):
 
 
 async def generate_response(
+    request_id: str,
     messages: Sequence[Mapping[str, Any]],
     system_instruction: str,
     tools: Sequence[Mapping[str, Any] | Tool] | None = None,
+    chat_history: list[dict[str, object]] | None = None,
 ) -> ChatResponse:
     """Call Qwen3 8B through local Ollama and return the complete response."""
     host = os.getenv("OLLAMA_HOST", DEFAULT_HOST)
@@ -59,6 +63,20 @@ async def generate_response(
     request_messages.extend(messages)
 
     try:
+        shared_history = chat_history or []
+        chat_message = (
+            str(shared_history[-1].get("content", ""))
+            if shared_history
+            else ""
+        )
+        await log_event_pgsql(
+            request_id=request_id,
+            chat_message=chat_message,
+            service_name="llm",
+            script_name="qwen_client.py",
+            event_type="call_qwen_api",
+            chat_history=shared_history,
+        )
         response = await AsyncClient(host=host, timeout=timeout_seconds).chat(
             model=model,
             messages=request_messages,
