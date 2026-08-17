@@ -98,3 +98,49 @@ async def log_llm_call_pgsql(
         ) from exc
     finally:
         await connection.close()
+
+
+async def log_tool_call_pgsql(
+    request_id: str,
+    calling_agent_name: str,
+    tool_name: str,
+    tool_arguments: str,
+    tool_output: str,
+) -> None:
+    """Insert one raw tool request and output into PostgreSQL."""
+    connection = await asyncpg.connect(
+        host=os.getenv("PGSQL_HOSTNAME"),
+        port=int(os.getenv("PGSQL_PORT", "5432")),
+        user=os.getenv("PGSQL_USER"),
+        password=os.getenv("PGSQL_PASSWORD"),
+        database=os.getenv("PGSQL_DBNAME"),
+    )
+    try:
+        await connection.execute(
+            """
+            INSERT INTO pa_jarvis_tool_calls (
+                request_id,
+                calling_agent_name,
+                tool_name,
+                tool_arguments,
+                tool_output
+            )
+            VALUES ($1::uuid, $2, $3, $4, $5)
+            """,
+            request_id,
+            calling_agent_name,
+            tool_name,
+            tool_arguments,
+            tool_output,
+        )
+    except asyncpg.UndefinedTableError as exc:
+        raise RuntimeError(
+            "PostgreSQL table 'pa_jarvis_tool_calls' was not found."
+        ) from exc
+    except asyncpg.UndefinedColumnError as exc:
+        raise RuntimeError(
+            "PostgreSQL table 'pa_jarvis_tool_calls' does not match the "
+            "required tool-call structure."
+        ) from exc
+    finally:
+        await connection.close()

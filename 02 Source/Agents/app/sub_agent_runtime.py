@@ -78,10 +78,11 @@ async def run_sub_agent(
                         chat_history=chat_history,
                     )
                     result = await call_tools.execute_tool(
-                        request_id,
-                        tool_name,
-                        arguments,
-                        chat_history,
+                        request_id=request_id,
+                        name=tool_name,
+                        arguments=arguments,
+                        chat_history=chat_history,
+                        calling_agent=calling_agent,
                     )
                     tool_result = {"result": result}
                 except Exception as exc:

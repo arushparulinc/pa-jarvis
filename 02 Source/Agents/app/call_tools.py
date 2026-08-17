@@ -16,6 +16,7 @@ class ToolsServiceError(RuntimeError):
 async def execute_tool(
     request_id: str,
     name: str,
+    calling_agent: str,
     arguments: dict[str, object] | None = None,
     chat_history: list[dict[str, object]] | None = None,
 ) -> object:
@@ -48,6 +49,7 @@ async def execute_tool(
                     "name": name,
                     "arguments": arguments or {},
                     "chat_history": chat_history or [],
+                    "calling_agent": calling_agent,
                 },
             )
     except httpx.RequestError as exc:
