@@ -72,11 +72,13 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
         )
         if request.provider == "qwen":
             reply, tool_calls = await qwen_chat.route_chat_message_qwen(
+                str(request.request_id),
                 request.shared_history,
                 request.calling_agent,
             )
         else:
             reply, tool_calls = await gemini_chat.route_chat_message_gemini(
+                str(request.request_id),
                 request.shared_history,
                 request.calling_agent,
             )

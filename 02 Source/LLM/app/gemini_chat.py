@@ -1,9 +1,11 @@
 from google.genai import types
 
 from . import gemini_client, system_instructions, tools_registry
+from .call_storage import log_event_pgsql
 
 
 async def route_chat_message_gemini(
+    request_id: str,
     shared_history: list[dict[str, object]],
     calling_agent: str,
 ) -> tuple[str, list[dict[str, object]]]:
@@ -84,10 +86,25 @@ async def route_chat_message_gemini(
     system_instruction = system_instructions.get_system_instructions(
         calling_agent
     )
+    chat_message = (
+        str(shared_history[-1].get("content", ""))
+        if shared_history
+        else ""
+    )
+    await log_event_pgsql(
+        request_id=request_id,
+        chat_message=chat_message,
+        service_name="llm",
+        script_name="gemini_chat.py",
+        event_type="call_gemini_client",
+        chat_history=shared_history,
+    )
     response = await gemini_client.generate_response(
+        request_id=request_id,
         contents=gemini_history,
         system_instruction=system_instruction,
         tools=gemini_tools,
+        chat_history=shared_history,
     )
     reply = response.text.strip() if response.text else ""
     tool_calls = [
