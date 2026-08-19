@@ -16,13 +16,33 @@ spec:
         - name: tools
           image: "{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
+
           ports:
             - containerPort: 8003
+
           env:
             - name: STORAGE_SERVICE_URL
               value: "http://storage:8004"
+
             - name: GDRIVE_ROOT_FOLDER_ID
               value: "1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H"
+
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/app/secrets/service-account.json"
+
           envFrom:
             - secretRef:
                 name: storage-db-secrets
+
+          volumeMounts:
+            - name: google-drive-service-account
+              mountPath: /app/secrets
+              readOnly: true
+
+      volumes:
+        - name: google-drive-service-account
+          secret:
+            secretName: google-drive-service-account
+            items:
+              - key: service-account.json
+                path: service-account.json
