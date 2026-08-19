@@ -59,8 +59,9 @@ services:
       - ./Tools/.env
     environment:
       STORAGE_SERVICE_URL: http://storage:8004
+      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/service-account.json
     volumes:
-      - ./Tools/credentials:/app/credentials
+      - ./Tools/credentials/service-account.json:/app/secrets/service-account.json:ro
     depends_on:
       - storage
 

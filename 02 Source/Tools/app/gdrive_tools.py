@@ -3,13 +3,10 @@ from difflib import get_close_matches
 from io import BytesIO
 import os
 from pathlib import Path
-import threading
 
 import asyncpg
 from dotenv import load_dotenv
-from google.auth.transport.requests import Request as GoogleAuthRequest
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
@@ -17,13 +14,7 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
 
-CREDENTIALS_FOLDER = PROJECT_ROOT / "credentials"
-GDRIVE_CLIENT_SECRET_PATH = (
-    CREDENTIALS_FOLDER / "gdrive_client_secret.json"
-)
-GDRIVE_TOKEN_PATH = CREDENTIALS_FOLDER / "gdrive_token.json"
 GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
-credentials_lock = threading.Lock()
 FOLDER_MATCH_CUTOFF = 0.65
 
 
@@ -54,40 +45,33 @@ async def _connect_postgres() -> asyncpg.Connection:
 
 
 def _get_drive_service():
-    """Create an authorized Drive client and persist refreshed OAuth tokens."""
-    with credentials_lock:
-        CREDENTIALS_FOLDER.mkdir(parents=True, exist_ok=True)
-        credentials = None
+    """Create an authorized Drive client using a service-account key."""
+    credentials_value = os.getenv(
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "",
+    ).strip()
+    if not credentials_value:
+        raise GoogleDriveError(
+            "GOOGLE_APPLICATION_CREDENTIALS is not configured."
+        )
 
-        if GDRIVE_TOKEN_PATH.exists():
-            credentials = Credentials.from_authorized_user_file(
-                str(GDRIVE_TOKEN_PATH),
-                GDRIVE_SCOPES,
-            )
+    credentials_path = Path(credentials_value)
+    if not credentials_path.is_absolute():
+        credentials_path = PROJECT_ROOT / credentials_path
+    if not credentials_path.is_file():
+        raise GoogleDriveError(
+            f"Google service-account file was not found at {credentials_path}."
+        )
 
-        if not credentials or not credentials.valid:
-            if (
-                credentials
-                and credentials.expired
-                and credentials.refresh_token
-            ):
-                credentials.refresh(GoogleAuthRequest())
-            else:
-                if not GDRIVE_CLIENT_SECRET_PATH.exists():
-                    raise GoogleDriveError(
-                        "Google Drive OAuth client secret was not found at "
-                        f"{GDRIVE_CLIENT_SECRET_PATH}."
-                    )
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    str(GDRIVE_CLIENT_SECRET_PATH),
-                    GDRIVE_SCOPES,
-                )
-                credentials = flow.run_local_server(port=0)
-
-            GDRIVE_TOKEN_PATH.write_text(
-                credentials.to_json(),
-                encoding="utf-8",
-            )
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            str(credentials_path),
+            scopes=GDRIVE_SCOPES,
+        )
+    except (OSError, ValueError) as exc:
+        raise GoogleDriveError(
+            f"Google service-account credentials are invalid: {exc}"
+        ) from exc
 
     return build(
         "drive",

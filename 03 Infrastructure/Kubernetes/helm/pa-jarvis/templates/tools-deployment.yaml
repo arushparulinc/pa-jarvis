@@ -43,3 +43,6 @@ spec:
         - name: google-drive-service-account
           secret:
             secretName: google-drive-service-account
+            items:
+              - key: service-account.json
+                path: service-account.json
