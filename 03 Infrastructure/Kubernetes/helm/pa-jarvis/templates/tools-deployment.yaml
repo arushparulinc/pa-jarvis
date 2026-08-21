@@ -33,6 +33,8 @@ spec:
           envFrom:
             - secretRef:
                 name: storage-db-secrets
+            - secretRef:
+                name: google-oauth-secrets
 
           volumeMounts:
             - name: google-drive-service-account
