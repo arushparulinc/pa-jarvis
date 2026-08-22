@@ -88,17 +88,18 @@ async def refresh_tools_registry() -> None:
                 tp.param_type,
                 tp.param_description,
                 tp.is_required
-            FROM tools_registry AS tr
-            INNER JOIN agents AS a
+            FROM config.tools_registry AS tr
+            INNER JOIN config.agents AS a
                 ON a.agent_id = tr.agent_id
-            LEFT JOIN tools_parameters AS tp
+            LEFT JOIN config.tools_parameters AS tp
                 ON tp.tool_id = tr.tool_id
             ORDER BY tr.agent_id, tr.tool_id, tp.param_name NULLS LAST
             """
         )
     except asyncpg.UndefinedTableError as exc:
         raise ToolsRegistryError(
-            "PostgreSQL tables 'tools_registry' and 'tools_parameters' "
+            "PostgreSQL tables 'config.tools_registry' and "
+            "'config.tools_parameters' "
             "must exist."
         ) from exc
     except asyncpg.UndefinedColumnError as exc:
@@ -142,7 +143,9 @@ async def refresh_tools_registry() -> None:
 
     tools = list(tools_by_id.values())
     if not tools:
-        raise ToolsRegistryError("No tools were found in 'tools_registry'.")
+        raise ToolsRegistryError(
+            "No tools were found in 'config.tools_registry'."
+        )
 
     TOOLS_REGISTRY_FILE.write_text(
         json.dumps(tools, indent=2),
