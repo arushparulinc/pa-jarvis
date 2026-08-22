@@ -226,11 +226,11 @@ async def gdrive_get_folders() -> list[dict[str, object]]:
     connection = await _connect_postgres()
     try:
         async with connection.transaction():
-            await connection.execute("DELETE FROM gdrive_folders")
+            await connection.execute("DELETE FROM toolsdata.gdrive_folders")
             if synchronized_folders:
                 await connection.executemany(
                     """
-                    INSERT INTO gdrive_folders (
+                    INSERT INTO toolsdata.gdrive_folders (
                         folder_id,
                         folder_name,
                         folder_description
@@ -252,7 +252,7 @@ async def gdrive_get_folders() -> list[dict[str, object]]:
                 )
     except asyncpg.UndefinedTableError as exc:
         raise GoogleDriveError(
-            "PostgreSQL table 'gdrive_folders' was not found."
+            "PostgreSQL table 'toolsdata.gdrive_folders' was not found."
         ) from exc
     finally:
         await connection.close()
@@ -265,11 +265,11 @@ async def _find_folder_id(folder_name: str) -> str | None:
     connection = await _connect_postgres()
     try:
         rows = await connection.fetch(
-            "SELECT folder_id, folder_name FROM gdrive_folders"
+            "SELECT folder_id, folder_name FROM toolsdata.gdrive_folders"
         )
     except asyncpg.UndefinedTableError as exc:
         raise GoogleDriveError(
-            "PostgreSQL table 'gdrive_folders' was not found."
+            "PostgreSQL table 'toolsdata.gdrive_folders' was not found."
         ) from exc
     finally:
         await connection.close()

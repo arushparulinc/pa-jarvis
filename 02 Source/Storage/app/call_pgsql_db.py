@@ -25,7 +25,7 @@ async def log_event_pgsql(
     try:
         await connection.execute(
             """
-            INSERT INTO pa_jarvis_service_events (
+            INSERT INTO logging.service_events (
                 request_id,
                 service_name,
                 script_name,
@@ -46,11 +46,11 @@ async def log_event_pgsql(
         )
     except asyncpg.UndefinedTableError as exc:
         raise RuntimeError(
-            "PostgreSQL table 'pa_jarvis_service_events' was not found."
+            "PostgreSQL table 'logging.service_events' was not found."
         ) from exc
     except asyncpg.UndefinedColumnError as exc:
         raise RuntimeError(
-            "PostgreSQL table 'pa_jarvis_service_events' does not match "
+            "PostgreSQL table 'logging.service_events' does not match "
             "the required event-log structure."
         ) from exc
     finally:
@@ -74,7 +74,7 @@ async def log_llm_call_pgsql(
     try:
         await connection.execute(
             """
-            INSERT INTO pa_jarvis_llm_calls (
+            INSERT INTO logging.llm_calls (
                 request_id,
                 calling_agent_name,
                 message_sent,
@@ -89,11 +89,11 @@ async def log_llm_call_pgsql(
         )
     except asyncpg.UndefinedTableError as exc:
         raise RuntimeError(
-            "PostgreSQL table 'pa_jarvis_llm_calls' was not found."
+            "PostgreSQL table 'logging.llm_calls' was not found."
         ) from exc
     except asyncpg.UndefinedColumnError as exc:
         raise RuntimeError(
-            "PostgreSQL table 'pa_jarvis_llm_calls' does not match the "
+            "PostgreSQL table 'logging.llm_calls' does not match the "
             "required LLM-call structure."
         ) from exc
     finally:
@@ -118,7 +118,7 @@ async def log_tool_call_pgsql(
     try:
         await connection.execute(
             """
-            INSERT INTO pa_jarvis_tool_calls (
+            INSERT INTO logging.tool_calls (
                 request_id,
                 calling_agent_name,
                 tool_name,
@@ -135,11 +135,11 @@ async def log_tool_call_pgsql(
         )
     except asyncpg.UndefinedTableError as exc:
         raise RuntimeError(
-            "PostgreSQL table 'pa_jarvis_tool_calls' was not found."
+            "PostgreSQL table 'logging.tool_calls' was not found."
         ) from exc
     except asyncpg.UndefinedColumnError as exc:
         raise RuntimeError(
-            "PostgreSQL table 'pa_jarvis_tool_calls' does not match the "
+            "PostgreSQL table 'logging.tool_calls' does not match the "
             "required tool-call structure."
         ) from exc
     finally:

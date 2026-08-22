@@ -43,8 +43,8 @@ async def refresh_system_instructions() -> None:
                 si.instrc_type,
                 si.instruction,
                 si.instrc_priority
-            FROM llm_system_instructions AS si
-            INNER JOIN agents AS a
+            FROM config.llm_system_instructions AS si
+            INNER JOIN config.agents AS a
                 ON a.agent_id = si.agent_id
             ORDER BY
                 si.agent_id,
@@ -55,7 +55,7 @@ async def refresh_system_instructions() -> None:
         )
     except asyncpg.UndefinedTableError as exc:
         raise SystemInstructionError(
-            "PostgreSQL table 'llm_system_instructions' was not found."
+            "PostgreSQL table 'config.llm_system_instructions' was not found."
         ) from exc
     except asyncpg.UndefinedColumnError as exc:
         raise SystemInstructionError(
@@ -71,7 +71,7 @@ async def refresh_system_instructions() -> None:
 
     if not rows:
         raise SystemInstructionError(
-            "PostgreSQL table 'llm_system_instructions' is empty."
+            "PostgreSQL table 'config.llm_system_instructions' is empty."
         )
 
     agents_by_id: dict[object, dict[str, object]] = {}
