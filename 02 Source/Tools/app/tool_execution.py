@@ -1,6 +1,13 @@
 import inspect
 
-from . import comm_tools, gdrive_tools, internet_tools, personal_tools
+from . import (
+    comm_tools,
+    gdrive_tools,
+    internet_tools,
+    personal_tools,
+    planner_tools,
+    shopping_tools,
+)
 
 
 # List every module that is allowed to expose executable tools. Add future
@@ -10,6 +17,8 @@ tool_modules = [
     gdrive_tools,
     internet_tools,
     comm_tools,
+    planner_tools,
+    shopping_tools,
 ]
 
 
