@@ -163,35 +163,35 @@ affinity: {}
 frontend:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-frontend
-    tag: sha-09fd832678969233464fe1a98bd026e0ab72ceb0
+    tag: sha-5b1a28fed097254c9d066e395be619c88bfa64b5
     pullPolicy: IfNotPresent
 
 backend:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-backend
-    tag: sha-09fd832678969233464fe1a98bd026e0ab72ceb0
+    tag: sha-5b1a28fed097254c9d066e395be619c88bfa64b5
     pullPolicy: IfNotPresent
 
 agents:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-agents
-    tag: sha-09fd832678969233464fe1a98bd026e0ab72ceb0
+    tag: sha-5b1a28fed097254c9d066e395be619c88bfa64b5
     pullPolicy: IfNotPresent
 
 llm:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-llm
-    tag: sha-09fd832678969233464fe1a98bd026e0ab72ceb0
+    tag: sha-5b1a28fed097254c9d066e395be619c88bfa64b5
     pullPolicy: IfNotPresent
 
 tools:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-tools
-    tag: sha-09fd832678969233464fe1a98bd026e0ab72ceb0
+    tag: sha-5b1a28fed097254c9d066e395be619c88bfa64b5
     pullPolicy: IfNotPresent
 
 storage:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-storage
-    tag: sha-09fd832678969233464fe1a98bd026e0ab72ceb0
+    tag: sha-5b1a28fed097254c9d066e395be619c88bfa64b5
     pullPolicy: IfNotPresent
