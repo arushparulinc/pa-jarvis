@@ -101,9 +101,9 @@ INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_descr
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(501, 'body', 'text', 'Body of the email', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(601, 'event_name', 'string', 'Name of calendar event', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(601, 'event_description', 'text', 'Description of calendar event', false);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(601, 'event_start_time', 'timestamptz', 'Start time of the event', true);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(601, 'event_duration_hrs', 'integer', 'Start time of the event', false);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(601, 'event_priority', 'string', 'Start time of the event', false);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(601, 'event_start_time', 'timestamptz', 'Start time as an ISO 8601 date-time; a time such as 20:00 means today in America/Toronto', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(601, 'event_duration_hrs', 'integer', 'Event duration in hours; defaults to 1', false);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(601, 'event_priority', 'string', 'Optional event priority', false);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(602, 'event_name', 'string', 'Name of calendar event to read', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(604, 'event_name', 'string', 'Name of calendar event to delete', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(605, 'task_name', 'string', 'Name of To-Do task to add', true);
