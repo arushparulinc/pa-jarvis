@@ -34,6 +34,7 @@ if not any(
 # provider can continue the complete conversation.
 chat_history: list[dict[str, object]] = []
 chat_history_lock = asyncio.Lock()
+MAX_CHAT_HISTORY_MESSAGES = 10
 
 # Stop a provider from entering an endless tool-calling loop.
 MAX_TOOL_ROUNDS = 10
@@ -43,15 +44,26 @@ class ChatError(RuntimeError):
     """Raised when no configured chat provider can return a response."""
 
 
+def _append_chat_history(message: dict[str, object]) -> None:
+    """Append one message and retain only valid recent history."""
+    chat_history.append(message)
+    del chat_history[:-MAX_CHAT_HISTORY_MESSAGES]
+
+    # Do not send history that begins in the middle of an older turn. This
+    # also prevents an orphaned tool result after its tool call was trimmed.
+    while chat_history and chat_history[0].get("role") != "user":
+        del chat_history[0]
+
+
 async def route_chat_message(request_id: str, message: str) -> str:
     """Manage tool rounds through Qwen first, then fall back to Gemini."""
     # Serialize complete turns so every provider sees a consistent shared
     # history while it is being updated by LLM and tool responses.
     async with chat_history_lock:
-        # Remember where this turn begins so an unsuccessful turn can be
-        # removed without affecting context from earlier completed turns.
-        turn_start_index = len(chat_history)
-        chat_history.append({"role": "user", "content": message})
+        # Keep a snapshot because history trimming can shift list indexes.
+        # Restore it if neither provider can complete the current turn.
+        previous_history = list(chat_history)
+        _append_chat_history({"role": "user", "content": message})
 
         provider = "qwen"
         provider_tool_round = 0
@@ -102,7 +114,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                         raise call_llm.LLMServiceError(error_message)
 
                     # Persist the final answer in the same shared context.
-                    chat_history.append(
+                    _append_chat_history(
                         {
                             "role": "assistant",
                             "content": assistant_reply,
@@ -120,7 +132,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
 
                 # Store the normalized LLM tool request once, regardless of
                 # which provider requested it.
-                chat_history.append(
+                _append_chat_history(
                     {
                         "role": "assistant",
                         "content": assistant_reply,
@@ -152,7 +164,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                     except Exception as exc:
                         tool_result = {"error": str(exc)}
 
-                    chat_history.append(
+                    _append_chat_history(
                         {
                             "role": "tool",
                             "tool_name": tool_name,
@@ -168,9 +180,9 @@ async def route_chat_message(request_id: str, message: str) -> str:
                     provider_tool_round = 0
                     continue
 
-                # Neither provider completed this turn. Roll back only the
-                # events added since the current user message.
-                del chat_history[turn_start_index:]
+                # Neither provider completed this turn. Restore the history
+                # from before the current user message was added.
+                chat_history[:] = previous_history
                 raise ChatError(
                     "No chat provider could generate a response. "
                     f"Primary provider error: {qwen_error}. "
