@@ -3,7 +3,7 @@ from . import sub_agent_runtime
 CALLING_AGENTS = {
     "google_drive_agent": "Google Drive Agent",
     "personal_tools_agent": "Personal Tools Agent",
-    "comm_channels_agent": "Comm Channnel Agent",
+    "comm_channels_agent": "Comm Channels Agent",
     "internet_tools_agent": "Internet Tools Agent",
     "planner_agent": "Planner Agent",
     "shopping_agent": "Shopping Agent",

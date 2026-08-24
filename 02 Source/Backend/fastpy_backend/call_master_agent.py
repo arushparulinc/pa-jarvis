@@ -34,7 +34,7 @@ async def invoke_master_agent(message: str) -> str:
             chat_message=message,
             service_name="backend",
             script_name="call_master_agent.py",
-            event_type="call_agent",
+            event_type="call_master_agent",
             chat_history=[{"role": "user", "content": message}],
         )
         async with httpx.AsyncClient(timeout=timeout_seconds) as client:
