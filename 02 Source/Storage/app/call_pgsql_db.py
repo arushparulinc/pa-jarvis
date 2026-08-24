@@ -5,6 +5,22 @@ from datetime import datetime
 import asyncpg
 
 
+async def check_postgres_health() -> None:
+    """Verify that PostgreSQL accepts connections and simple queries."""
+    connection = await asyncpg.connect(
+        host=os.getenv("PGSQL_HOSTNAME"),
+        port=int(os.getenv("PGSQL_PORT", "5432")),
+        user=os.getenv("PGSQL_USER"),
+        password=os.getenv("PGSQL_PASSWORD"),
+        database=os.getenv("PGSQL_DBNAME"),
+        timeout=float(os.getenv("PGSQL_HEALTH_TIMEOUT_SECONDS", "5")),
+    )
+    try:
+        await connection.execute("SELECT 1")
+    finally:
+        await connection.close()
+
+
 async def log_event_pgsql(
     request_id: str,
     service_name: str,
