@@ -1,6 +1,8 @@
 import asyncio
 import os
+from datetime import datetime, time, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import asyncpg
 from dotenv import load_dotenv
@@ -78,23 +80,59 @@ def _get_calendar_service():
 
 async def add_calendar_event(
     event_name: str,
-    start_time: str,
-    end_time: str,
+    event_start_time: str,
+    event_duration_hrs: int | float = 1,
     event_description: str = "",
+    event_priority: str = "",
     time_zone: str = DEFAULT_TIME_ZONE,
     calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> dict[str, object]:
-    """Create a Google Calendar event using RFC 3339 date-time values."""
+    """Create an event, deriving its end from the start and duration."""
+    try:
+        calendar_time_zone = ZoneInfo(time_zone)
+    except ZoneInfoNotFoundError as exc:
+        raise PlannerError(f"Unknown calendar time zone: {time_zone}") from exc
+
+    try:
+        normalized_start = event_start_time.strip().replace("Z", "+00:00")
+        if ":" in normalized_start and "T" not in normalized_start:
+            parsed_time = time.fromisoformat(normalized_start)
+            start = datetime.combine(
+                datetime.now(calendar_time_zone).date(),
+                parsed_time,
+                tzinfo=calendar_time_zone,
+            )
+        else:
+            start = datetime.fromisoformat(normalized_start)
+            if start.tzinfo is None:
+                start = start.replace(tzinfo=calendar_time_zone)
+
+        duration = float(event_duration_hrs)
+        if duration <= 0:
+            raise ValueError("duration must be greater than zero")
+    except (TypeError, ValueError) as exc:
+        raise PlannerError(
+            "event_start_time must be an ISO 8601 date-time or time, and "
+            "event_duration_hrs must be greater than zero."
+        ) from exc
+
+    end = start + timedelta(hours=duration)
+    event_body: dict[str, object] = {
+        "summary": event_name,
+        "description": event_description,
+        "start": {"dateTime": start.isoformat(), "timeZone": time_zone},
+        "end": {"dateTime": end.isoformat(), "timeZone": time_zone},
+    }
+    if event_priority.strip():
+        event_body["extendedProperties"] = {
+            "private": {"priority": event_priority.strip()}
+        }
+
     def create_event() -> dict[str, object]:
         try:
             return _get_calendar_service().events().insert(
                 calendarId=calendar_id,
-                body={
-                    "summary": event_name,
-                    "description": event_description,
-                    "start": {"dateTime": start_time, "timeZone": time_zone},
-                    "end": {"dateTime": end_time, "timeZone": time_zone},
-                },
+                body=event_body,
             ).execute()
         except HttpError as exc:
             raise PlannerError(f"Could not create calendar event: {exc}") from exc

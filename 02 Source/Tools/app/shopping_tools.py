@@ -31,6 +31,7 @@ def _item_record(row: asyncpg.Record) -> dict[str, object]:
         "item_id": row["item_id"],
         "item_name": row["item_name"],
         "item_description": row["item_description"],
+        "item_priority": row["item_priority"],
         "created_at": row["created_at"].isoformat(),
     }
 
@@ -38,18 +39,29 @@ def _item_record(row: asyncpg.Record) -> dict[str, object]:
 async def add_item(
     item_name: str,
     item_description: str = "",
+    item_priority: str = "",
 ) -> dict[str, object]:
     """Add an item to the PostgreSQL shopping list."""
     connection = await _connect_postgres()
     try:
         row = await connection.fetchrow(
             """
-            INSERT INTO toolsdata.shopping_list (item_name, item_description)
-            VALUES ($1, $2)
-            RETURNING item_id, item_name, item_description, created_at
+            INSERT INTO toolsdata.shopping_list (
+                item_name,
+                item_description,
+                item_priority
+            )
+            VALUES ($1, $2, $3)
+            RETURNING
+                item_id,
+                item_name,
+                item_description,
+                item_priority,
+                created_at
             """,
             item_name,
             item_description or None,
+            item_priority or None,
         )
         return _item_record(row)
     except asyncpg.UniqueViolationError as exc:
@@ -64,7 +76,12 @@ async def get_item(item_id: int) -> dict[str, object] | None:
     try:
         row = await connection.fetchrow(
             """
-            SELECT item_id, item_name, item_description, created_at
+            SELECT
+                item_id,
+                item_name,
+                item_description,
+                item_priority,
+                created_at
             FROM toolsdata.shopping_list
             WHERE item_id = $1
             """,
@@ -81,7 +98,12 @@ async def list_items() -> list[dict[str, object]]:
     try:
         rows = await connection.fetch(
             """
-            SELECT item_id, item_name, item_description, created_at
+            SELECT
+                item_id,
+                item_name,
+                item_description,
+                item_priority,
+                created_at
             FROM toolsdata.shopping_list
             ORDER BY created_at DESC, item_id DESC
             """
