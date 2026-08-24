@@ -22,6 +22,7 @@ SCHEMA_TYPE_MAP = {
     "bool": "boolean",
     "boolean": "boolean",
     "character varying": "string",
+    "date": "string",
     "decimal": "number",
     "dict": "object",
     "double": "number",
