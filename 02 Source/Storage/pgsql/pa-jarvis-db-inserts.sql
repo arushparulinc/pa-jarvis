@@ -64,6 +64,8 @@ INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id
 INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id) VALUES(102, 'Personal Tools Agent', 'Capabilities: Manages personal facts, quotes, pics, videos', 1);
 INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id) VALUES(103, 'Internet Tools Agent', 'Capabilities: Google Search, Weather Information', 1);
 INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id) VALUES(104, 'Comm Channels Agent', 'Capabilities: Send Email', 1);
+INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id) VALUES(105, 'Planner Agent', 'Capabilities: Manage Calendar, To-Do Task List', 1);
+INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id) VALUES(106, 'Shopping Agent', 'Capabilities: Manage Shopping List', 1);
 INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id) VALUES(201, 'gdrive_list_folder', 'List files in a specific Google Drive folder.', 2);
 INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id) VALUES(202, 'gdrive_read', 'Read a specific file from Google Drive.', 2);
 INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id) VALUES(203, 'gdrive_write', 'Upload a local file into a specific Google Drive folder.', 2);
@@ -90,6 +92,8 @@ INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_descr
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(102, 'User Prompt', 'text', 'Latest user prompt with the request', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(103, 'User Prompt', 'text', 'Latest user prompt with the request', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(104, 'User Prompt', 'text', 'Latest user prompt with the request', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(105, 'User Prompt', 'text', 'Latest user prompt with the request', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(106, 'User Prompt', 'text', 'Latest user prompt with the request', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(201, 'folder_name', 'string', 'The Google Drive folder name to list.', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(401, 'request', 'string', 'The complete request to search for.', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(501, 'recipient_list', 'string', 'The list of recipient email addresses', true);
