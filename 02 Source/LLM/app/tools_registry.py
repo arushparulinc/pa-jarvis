@@ -38,6 +38,11 @@ SCHEMA_TYPE_MAP = {
     "str": "string",
     "string": "string",
     "text": "string",
+    "timestamp": "string",
+    "timestamp without time zone": "string",
+    "timestamp with time zone": "string",
+    "timestamptz": "string",
+    "timestampz": "string",
     "varchar": "string",
 }
 
