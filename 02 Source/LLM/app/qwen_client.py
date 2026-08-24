@@ -36,6 +36,29 @@ class QwenAPIError(QwenError):
         self.status_code = status_code
 
 
+async def check_ollama_health() -> None:
+    """Verify that the configured Ollama server is reachable."""
+    host = os.getenv("OLLAMA_HOST", DEFAULT_HOST)
+    timeout_seconds = float(
+        os.getenv("OLLAMA_HEALTH_TIMEOUT_SECONDS", "5")
+    )
+    try:
+        await AsyncClient(host=host, timeout=timeout_seconds).list()
+    except ResponseError as exc:
+        raise QwenAPIError(
+            message=str(exc),
+            status_code=exc.status_code,
+        ) from exc
+    except RequestError as exc:
+        raise QwenConnectionError(
+            f"Could not reach Ollama at {host}: {exc}"
+        ) from exc
+    except Exception as exc:
+        raise QwenError(
+            f"Ollama health check failed: {type(exc).__name__}: {exc}"
+        ) from exc
+
+
 async def generate_response(
     request_id: str,
     messages: Sequence[Mapping[str, Any]],

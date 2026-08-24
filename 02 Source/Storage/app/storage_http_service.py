@@ -11,6 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
 
 from .call_pgsql_db import (
+    check_postgres_health,
     log_event_pgsql,
     log_llm_call_pgsql,
     log_tool_call_pgsql,
@@ -62,8 +63,24 @@ async def root() -> dict[str, str]:
 
 
 @app.get("/health", tags=["General"])
-async def health() -> dict[str, str]:
-    return {"status": "healthy", "service": "storage-service"}
+async def health() -> dict[str, object]:
+    try:
+        await check_postgres_health()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unhealthy",
+                "service": "storage-service",
+                "dependencies": {"postgres": str(exc)},
+            },
+        ) from exc
+
+    return {
+        "status": "healthy",
+        "service": "storage-service",
+        "dependencies": {"postgres": "healthy"},
+    }
 
 
 @app.post("/log-event", response_model=LogEventResponse, tags=["Storage"])

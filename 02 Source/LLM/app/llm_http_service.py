@@ -49,8 +49,24 @@ async def root() -> dict[str, str]:
 
 
 @app.get("/health", tags=["General"])
-async def health() -> dict[str, str]:
-    return {"status": "healthy", "service": "llm-service"}
+async def health() -> dict[str, object]:
+    try:
+        await qwen_client.check_ollama_health()
+    except qwen_client.QwenError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unhealthy",
+                "service": "llm-service",
+                "dependencies": {"ollama": str(exc)},
+            },
+        ) from exc
+
+    return {
+        "status": "healthy",
+        "service": "llm-service",
+        "dependencies": {"ollama": "healthy"},
+    }
 
 
 @app.post("/invoke", response_model=LLMInvokeResponse, tags=["LLM"])

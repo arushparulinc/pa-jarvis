@@ -18,6 +18,14 @@ spec:
           imagePullPolicy: {{ .Values.storage.image.pullPolicy }}
           ports:
             - containerPort: 8004
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 6
+            failureThreshold: 3
           envFrom:
             - secretRef:
                 name: storage-db-secrets
