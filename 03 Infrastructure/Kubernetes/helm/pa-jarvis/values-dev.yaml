@@ -160,6 +160,9 @@ tolerations: []
 
 affinity: {}
 
+traefikIngress:
+  host: dev.chat.arushparulinc.com
+
 frontend:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-frontend
