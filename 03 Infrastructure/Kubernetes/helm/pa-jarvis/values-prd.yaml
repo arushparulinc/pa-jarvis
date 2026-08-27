@@ -1,5 +1,5 @@
 traefikIngress:
-  host: dev.chat.arushparulinc.com
+  host: chat.arushparulinc.com
 
 frontend:
   image:
