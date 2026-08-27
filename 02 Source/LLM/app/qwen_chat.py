@@ -1,11 +1,27 @@
 import json
 import logging
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from . import qwen_client, system_instructions, tools_registry
 from .call_storage import log_event_pgsql, log_llm_call_pgsql
 
 
 master_agent_logger = logging.getLogger("pa_jarvis.master_agent")
+LLM_TIME_ZONE = ZoneInfo("America/Toronto")
+
+
+def _append_current_date_time(system_instruction: str) -> str:
+    """Append current local date and time to one LLM instruction."""
+    current = datetime.now(LLM_TIME_ZONE)
+    useful_info = (
+        "USEFUL INFO\n"
+        f"Date: {current:%Y-%m-%d}\n"
+        f"Time: {current:%H:%M:%S}\n"
+        f"Timezone: America/Toronto ({current.tzname()})\n"
+        f"Day of the Week: {current:%A}"
+    )
+    return f"{system_instruction.rstrip()}\n\n{useful_info}"
 
 
 async def route_chat_message_qwen(
@@ -75,6 +91,7 @@ async def route_chat_message_qwen(
     system_instruction = system_instructions.get_system_instructions(
         calling_agent
     )
+    system_instruction = _append_current_date_time(system_instruction)
     chat_message = (
         str(shared_history[-1].get("content", ""))
         if shared_history

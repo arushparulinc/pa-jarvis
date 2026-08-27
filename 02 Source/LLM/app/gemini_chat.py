@@ -1,9 +1,27 @@
 import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from google.genai import types
 
 from . import gemini_client, system_instructions, tools_registry
 from .call_storage import log_event_pgsql, log_llm_call_pgsql
+
+
+LLM_TIME_ZONE = ZoneInfo("America/Toronto")
+
+
+def _append_current_date_time(system_instruction: str) -> str:
+    """Append current local date and time to one LLM instruction."""
+    current = datetime.now(LLM_TIME_ZONE)
+    useful_info = (
+        "USEFUL INFO\n"
+        f"Date: {current:%Y-%m-%d}\n"
+        f"Time: {current:%H:%M:%S}\n"
+        f"Timezone: America/Toronto ({current.tzname()})\n"
+        f"Day of the Week: {current:%A}"
+    )
+    return f"{system_instruction.rstrip()}\n\n{useful_info}"
 
 
 async def route_chat_message_gemini(
@@ -88,6 +106,7 @@ async def route_chat_message_gemini(
     system_instruction = system_instructions.get_system_instructions(
         calling_agent
     )
+    system_instruction = _append_current_date_time(system_instruction)
     chat_message = (
         str(shared_history[-1].get("content", ""))
         if shared_history
