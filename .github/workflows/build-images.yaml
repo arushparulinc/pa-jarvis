@@ -1,4 +1,4 @@
-name: Build and Push Dev Images
+name: Build and Push Images
 
 on:
   push:
@@ -70,9 +70,10 @@ jobs:
           context: ${{ matrix.context }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}:dev
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}:sha-${{ github.sha }}
 
-  prepare-dev-deployment:
+  create-deployments:
     needs: build-images
-    uses: ./.github/workflows/dev-deployment.yaml
+    uses: ./.github/workflows/create-deployments.yaml
+    with:
+      image_sha: ${{ github.sha }}
