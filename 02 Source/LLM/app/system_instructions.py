@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 
@@ -98,21 +97,12 @@ async def refresh_system_instructions() -> None:
     if not agents_by_id:
         raise SystemInstructionError("No usable system instructions were found.")
 
-    current_date_time = datetime.now().astimezone().isoformat(timespec="seconds")
-    useful_info = (
-        "OTHER USEFUL INFO\n"
-        f"Current date and time: {current_date_time}"
-    )
-
     agents = []
     for agent in agents_by_id.values():
         sections = agent.pop("sections")
-        database_instructions = "\n\n".join(
+        agent["system_instruction"] = "\n\n".join(
             f"{instruction_type}\n" + "\n".join(instructions)
             for instruction_type, instructions in sections.items()
-        )
-        agent["system_instruction"] = (
-            f"{database_instructions}\n\n{useful_info}"
         )
         agents.append(agent)
 
