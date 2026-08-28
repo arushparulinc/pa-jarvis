@@ -13,7 +13,7 @@ CALLING_AGENTS = {
 async def execute_agent_actions(
     request_id: str,
     agent_name: str,
-    original_user_prompt: str,
+    agent_instructions: str,
 ) -> str:
     """Dispatch a master-router tool call to a stateless sub-agent."""
     calling_agent = CALLING_AGENTS.get(agent_name)
@@ -21,7 +21,7 @@ async def execute_agent_actions(
         raise KeyError(f"Unknown sub-agent: {agent_name}")
     return await sub_agent_runtime.run_sub_agent(
         request_id=request_id,
-        original_user_prompt=original_user_prompt,
+        agent_instructions=agent_instructions,
         calling_agent=calling_agent,
         script_name="call_sub_agent.py",
     )
