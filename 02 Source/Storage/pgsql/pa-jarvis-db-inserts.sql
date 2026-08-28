@@ -102,12 +102,12 @@ INSERT INTO config.tools_registry(tool_id, tool_name, tool_description, agent_id
 
 
 -- ADD TOOL PARAMETERS
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(101, 'User Prompt', 'text', 'Latest user prompt with the request', true);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(102, 'User Prompt', 'text', 'Latest user prompt with the request', true);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(103, 'User Prompt', 'text', 'Latest user prompt with the request', true);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(104, 'User Prompt', 'text', 'Latest user prompt with the request', true);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(105, 'User Prompt', 'text', 'Latest user prompt with the request', true);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(106, 'User Prompt', 'text', 'Latest user prompt with the request', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(101, 'Agent Instructions', 'text', 'Detailed instructions for agent to fulfill the user request', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(102, 'Agent Instructions', 'text', 'Detailed instructions for agent to fulfill the user request', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(103, 'Agent Instructions', 'text', 'Detailed instructions for agent to fulfill the user request', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(104, 'Agent Instructions', 'text', 'Detailed instructions for agent to fulfill the user request', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(105, 'Agent Instructions', 'text', 'Detailed instructions for agent to fulfill the user request', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(106, 'Agent Instructions', 'text', 'Detailed instructions for agent to fulfill the user request', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(201, 'folder_name', 'string', 'The Google Drive folder name to list.', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(401, 'request', 'string', 'The complete request to search for.', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(501, 'recipient_list', 'string', 'The list of recipient email addresses', true);
