@@ -11,13 +11,13 @@ class SubAgentError(RuntimeError):
 
 async def run_sub_agent(
     request_id: str,
-    original_user_prompt: str,
+    agent_instructions: str,
     calling_agent: str,
     script_name: str,
 ) -> str:
     """Run one stateless sub-agent with its own temporary chat history."""
     chat_history: list[dict[str, object]] = [
-        {"role": "user", "content": original_user_prompt}
+        {"role": "user", "content": agent_instructions}
     ]
     provider = "qwen"
     provider_tool_round = 0
@@ -27,7 +27,7 @@ async def run_sub_agent(
         try:
             await log_event_pgsql(
                 request_id=request_id,
-                chat_message=original_user_prompt,
+                chat_message=agent_instructions,
                 service_name="agents",
                 script_name=script_name,
                 event_type="call_llm_wrapper",

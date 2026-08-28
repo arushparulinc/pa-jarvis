@@ -144,11 +144,31 @@ async def route_chat_message(request_id: str, message: str) -> str:
                 for tool_call in tool_calls:
                     tool_name = str(tool_call["name"])
                     try:
+                        arguments = tool_call.get("arguments", {})
+                        if not isinstance(arguments, dict):
+                            raise ValueError(
+                                f"Tool {tool_name} returned invalid arguments."
+                            )
+                        raw_agent_instructions = arguments.get(
+                            "agent_instructions"
+                        )
+                        if not isinstance(raw_agent_instructions, str):
+                            raise ValueError(
+                                f"Tool {tool_name} did not provide required "
+                                "agent_instructions."
+                            )
+                        agent_instructions = raw_agent_instructions.strip()
+                        if not agent_instructions:
+                            raise ValueError(
+                                f"Tool {tool_name} provided empty "
+                                "agent_instructions."
+                            )
+
                         await log_event_pgsql(
                             request_id=request_id,
                             chat_message=(
                                 f"Tool {tool_name}: "
-                                f"{tool_call.get('arguments', {})}"
+                                f"{arguments}"
                             ),
                             service_name="agents",
                             script_name="master_router_agent.py",
@@ -156,9 +176,9 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             chat_history=chat_history,
                         )
                         result = await call_sub_agent.execute_agent_actions(
-                            request_id,
-                            tool_name,
-                            message,
+                            request_id=request_id,
+                            agent_name=tool_name,
+                            agent_instructions=agent_instructions,
                         )
                         tool_result = {"result": result}
                     except Exception as exc:
