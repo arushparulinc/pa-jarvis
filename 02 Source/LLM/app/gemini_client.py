@@ -3,6 +3,8 @@ import os
 from google import genai
 from google.genai import errors, types
 
+from .call_storage import log_event_pgsql
+
 
 # Use this model unless GEMINI_MODEL overrides it in the environment.
 DEFAULT_MODEL = "gemini-2.5-flash"
@@ -32,9 +34,11 @@ class GeminiAPIError(GeminiError):
 
 
 async def generate_response(
+    request_id: str,
     contents: list[dict[str, object] | types.Content],
     system_instruction: str,
     tools: list[types.Tool],
+    chat_history: list[dict[str, object]] | None = None,
 ) -> types.GenerateContentResponse:
     """Call Gemini and return the complete response object."""
     # Read credentials at request time so missing configuration produces a clear
@@ -50,6 +54,20 @@ async def generate_response(
         # The async client prevents the FastAPI event loop from blocking while
         # Gemini processes the request.
         async with genai.Client(api_key=api_key).aio as client:
+            shared_history = chat_history or []
+            chat_message = (
+                str(shared_history[-1].get("content", ""))
+                if shared_history
+                else ""
+            )
+            await log_event_pgsql(
+                request_id=request_id,
+                chat_message=chat_message,
+                service_name="llm",
+                script_name="gemini_client.py",
+                event_type="call_gemini_api",
+                chat_history=shared_history,
+            )
             # Pass conversation context and system instructions unchanged from
             # the router. The router manually executes any requested functions.
             return await client.models.generate_content(

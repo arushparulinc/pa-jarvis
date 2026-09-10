@@ -38,3 +38,34 @@ async def log_event_pgsql(
         return response.is_success
     except httpx.RequestError:
         return False
+
+
+async def log_tool_call_pgsql(
+    request_id: str,
+    calling_agent_name: str,
+    tool_name: str,
+    tool_arguments: str,
+    tool_output: str,
+) -> bool:
+    """Send one raw tool call and output to the Storage service."""
+    base_url = os.getenv(
+        "STORAGE_SERVICE_URL",
+        DEFAULT_STORAGE_SERVICE_URL,
+    ).rstrip("/")
+    payload = {
+        "RequestID": request_id,
+        "calling_agent_name": calling_agent_name,
+        "tool_name": tool_name,
+        "tool_arguments": tool_arguments,
+        "tool_output": tool_output,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=DEFAULT_TIMEOUT_SECONDS) as client:
+            response = await client.post(
+                f"{base_url}/log-tool-call",
+                json=payload,
+            )
+        return response.is_success
+    except httpx.RequestError:
+        return False

@@ -2,7 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from . import call_llm, call_tools
+from . import call_llm, call_sub_agent
 from .call_storage import log_event_pgsql
 
 
@@ -34,6 +34,7 @@ if not any(
 # provider can continue the complete conversation.
 chat_history: list[dict[str, object]] = []
 chat_history_lock = asyncio.Lock()
+MAX_CHAT_HISTORY_MESSAGES = 10
 
 # Stop a provider from entering an endless tool-calling loop.
 MAX_TOOL_ROUNDS = 10
@@ -43,15 +44,26 @@ class ChatError(RuntimeError):
     """Raised when no configured chat provider can return a response."""
 
 
+def _append_chat_history(message: dict[str, object]) -> None:
+    """Append one message and retain only valid recent history."""
+    chat_history.append(message)
+    del chat_history[:-MAX_CHAT_HISTORY_MESSAGES]
+
+    # Do not send history that begins in the middle of an older turn. This
+    # also prevents an orphaned tool result after its tool call was trimmed.
+    while chat_history and chat_history[0].get("role") != "user":
+        del chat_history[0]
+
+
 async def route_chat_message(request_id: str, message: str) -> str:
     """Manage tool rounds through Qwen first, then fall back to Gemini."""
     # Serialize complete turns so every provider sees a consistent shared
     # history while it is being updated by LLM and tool responses.
     async with chat_history_lock:
-        # Remember where this turn begins so an unsuccessful turn can be
-        # removed without affecting context from earlier completed turns.
-        turn_start_index = len(chat_history)
-        chat_history.append({"role": "user", "content": message})
+        # Keep a snapshot because history trimming can shift list indexes.
+        # Restore it if neither provider can complete the current turn.
+        previous_history = list(chat_history)
+        _append_chat_history({"role": "user", "content": message})
 
         provider = "qwen"
         provider_tool_round = 0
@@ -73,6 +85,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             request_id,
                             "qwen",
                             chat_history,
+                            "Master Router Agent",
                         )
                     )
                 else:
@@ -89,6 +102,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                             request_id,
                             "gemini",
                             chat_history,
+                            "Master Router Agent",
                         )
                     )
 
@@ -100,7 +114,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                         raise call_llm.LLMServiceError(error_message)
 
                     # Persist the final answer in the same shared context.
-                    chat_history.append(
+                    _append_chat_history(
                         {
                             "role": "assistant",
                             "content": assistant_reply,
@@ -118,7 +132,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
 
                 # Store the normalized LLM tool request once, regardless of
                 # which provider requested it.
-                chat_history.append(
+                _append_chat_history(
                     {
                         "role": "assistant",
                         "content": assistant_reply,
@@ -130,28 +144,47 @@ async def route_chat_message(request_id: str, message: str) -> str:
                 for tool_call in tool_calls:
                     tool_name = str(tool_call["name"])
                     try:
+                        arguments = tool_call.get("arguments", {})
+                        if not isinstance(arguments, dict):
+                            raise ValueError(
+                                f"Tool {tool_name} returned invalid arguments."
+                            )
+                        raw_agent_instructions = arguments.get(
+                            "agent_instructions"
+                        )
+                        if not isinstance(raw_agent_instructions, str):
+                            raise ValueError(
+                                f"Tool {tool_name} did not provide required "
+                                "agent_instructions."
+                            )
+                        agent_instructions = raw_agent_instructions.strip()
+                        if not agent_instructions:
+                            raise ValueError(
+                                f"Tool {tool_name} provided empty "
+                                "agent_instructions."
+                            )
+
                         await log_event_pgsql(
                             request_id=request_id,
                             chat_message=(
                                 f"Tool {tool_name}: "
-                                f"{tool_call.get('arguments', {})}"
+                                f"{arguments}"
                             ),
                             service_name="agents",
                             script_name="master_router_agent.py",
-                            event_type="call_tools_wrapper",
+                            event_type="call_sub_agent",
                             chat_history=chat_history,
                         )
-                        result = await call_tools.execute_tool(
-                            request_id,
-                            tool_name,
-                            tool_call.get("arguments", {}),
-                            chat_history,
+                        result = await call_sub_agent.execute_agent_actions(
+                            request_id=request_id,
+                            agent_name=tool_name,
+                            agent_instructions=agent_instructions,
                         )
                         tool_result = {"result": result}
                     except Exception as exc:
                         tool_result = {"error": str(exc)}
 
-                    chat_history.append(
+                    _append_chat_history(
                         {
                             "role": "tool",
                             "tool_name": tool_name,
@@ -167,9 +200,9 @@ async def route_chat_message(request_id: str, message: str) -> str:
                     provider_tool_round = 0
                     continue
 
-                # Neither provider completed this turn. Roll back only the
-                # events added since the current user message.
-                del chat_history[turn_start_index:]
+                # Neither provider completed this turn. Restore the history
+                # from before the current user message was added.
+                chat_history[:] = previous_history
                 raise ChatError(
                     "No chat provider could generate a response. "
                     f"Primary provider error: {qwen_error}. "

@@ -11,10 +11,10 @@ spec:
 
   tls:
     - hosts:
-        - chat.arushparulinc.com
+        - {{ .Values.traefikIngress.host | quote }}
 
   rules:
-    - host: chat.arushparulinc.com
+    - host: {{ .Values.traefikIngress.host | quote }}
       http:
         paths:
           - path: /api

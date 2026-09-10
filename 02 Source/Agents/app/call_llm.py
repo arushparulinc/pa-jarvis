@@ -17,6 +17,7 @@ async def invoke_llm(
     request_id: str,
     provider: str,
     shared_history: list[dict[str, object]],
+    calling_agent: str,
 ) -> tuple[str, list[dict[str, object]]]:
     """Invoke Qwen or Gemini through the independent LLM service."""
     base_url = os.getenv(
@@ -48,6 +49,7 @@ async def invoke_llm(
                     "RequestID": request_id,
                     "provider": provider,
                     "shared_history": shared_history,
+                    "calling_agent": calling_agent,
                 },
             )
     except httpx.RequestError as exc:

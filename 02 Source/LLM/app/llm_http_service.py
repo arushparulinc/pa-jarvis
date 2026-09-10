@@ -32,6 +32,7 @@ class LLMInvokeRequest(BaseModel):
     request_id: UUID = Field(alias="RequestID")
     provider: Literal["qwen", "gemini"]
     shared_history: list[dict[str, object]]
+    calling_agent: str = Field(min_length=1, max_length=100)
 
 
 class LLMInvokeResponse(BaseModel):
@@ -48,8 +49,24 @@ async def root() -> dict[str, str]:
 
 
 @app.get("/health", tags=["General"])
-async def health() -> dict[str, str]:
-    return {"status": "healthy", "service": "llm-service"}
+async def health() -> dict[str, object]:
+    try:
+        await qwen_client.check_ollama_health()
+    except qwen_client.QwenError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unhealthy",
+                "service": "llm-service",
+                "dependencies": {"ollama": str(exc)},
+            },
+        ) from exc
+
+    return {
+        "status": "healthy",
+        "service": "llm-service",
+        "dependencies": {"ollama": "healthy"},
+    }
 
 
 @app.post("/invoke", response_model=LLMInvokeResponse, tags=["LLM"])
@@ -71,11 +88,15 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
         )
         if request.provider == "qwen":
             reply, tool_calls = await qwen_chat.route_chat_message_qwen(
+                str(request.request_id),
                 request.shared_history,
+                request.calling_agent,
             )
         else:
             reply, tool_calls = await gemini_chat.route_chat_message_gemini(
+                str(request.request_id),
                 request.shared_history,
+                request.calling_agent,
             )
     except (
         qwen_client.QwenError,

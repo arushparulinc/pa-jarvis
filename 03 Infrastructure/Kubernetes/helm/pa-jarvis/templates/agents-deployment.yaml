@@ -12,6 +12,15 @@ spec:
       labels:
         app: agents
     spec:
+      initContainers:
+        - name: wait-for-llm
+          image: busybox:1.36.1
+          command:
+            - sh
+            - -c
+            - >-
+              until wget -qO- http://llm:8002/health > /dev/null;
+              do echo "Waiting for LLM service"; sleep 2; done
       containers:
         - name: agents
           image: "{{ .Values.agents.image.repository }}:{{ .Values.agents.image.tag }}"

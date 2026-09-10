@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from uuid import UUID
 
@@ -10,7 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
 
 from . import tool_execution
-from .call_storage import log_event_pgsql
+from .call_storage import log_event_pgsql, log_tool_call_pgsql
 
 
 app = FastAPI(
@@ -25,6 +26,7 @@ class ToolExecuteRequest(BaseModel):
     name: str = Field(min_length=1)
     arguments: dict[str, object] = Field(default_factory=dict)
     chat_history: list[dict[str, object]] = Field(default_factory=list)
+    calling_agent: str = Field(min_length=1, max_length=100)
 
 
 class ToolExecuteResponse(BaseModel):
@@ -59,6 +61,13 @@ async def execute(request: ToolExecuteRequest) -> ToolExecuteResponse:
         result = await tool_execution.execute_tool(
             request.name,
             request.arguments,
+        )
+        await log_tool_call_pgsql(
+            request_id=str(request.request_id),
+            calling_agent_name=request.calling_agent,
+            tool_name=request.name,
+            tool_arguments=json.dumps(request.arguments, default=str),
+            tool_output=json.dumps(result, default=str),
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

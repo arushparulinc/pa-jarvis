@@ -1,15 +1,38 @@
+import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from google.genai import types
 
 from . import gemini_client, system_instructions, tools_registry
+from .call_storage import log_event_pgsql, log_llm_call_pgsql
+
+
+LLM_TIME_ZONE = ZoneInfo("America/Toronto")
+
+
+def _append_current_date_time(system_instruction: str) -> str:
+    """Append current local date and time to one LLM instruction."""
+    current = datetime.now(LLM_TIME_ZONE)
+    useful_info = (
+        "USEFUL INFO\n"
+        f"Date: {current:%Y-%m-%d}\n"
+        f"Time: {current:%H:%M:%S}\n"
+        f"Timezone: America/Toronto ({current.tzname()})\n"
+        f"Day of the Week: {current:%A}"
+    )
+    return f"{system_instruction.rstrip()}\n\n{useful_info}"
 
 
 async def route_chat_message_gemini(
+    request_id: str,
     shared_history: list[dict[str, object]],
+    calling_agent: str,
 ) -> tuple[str, list[dict[str, object]]]:
     """Make one Gemini request and return provider-neutral output."""
     # Convert the generic registry entries into Gemini tool definitions.
     gemini_tools = []
-    for tool in tools_registry.get_all_tools():
+    for tool in tools_registry.get_all_tools(calling_agent):
         parameters = tool["parameters"]
         parameter_schema: dict[str, object] = {
             "type": "object",
@@ -80,11 +103,45 @@ async def route_chat_message_gemini(
             )
         )
 
-    system_instruction = system_instructions.get_system_instructions()
+    system_instruction = system_instructions.get_system_instructions(
+        calling_agent
+    )
+    system_instruction = _append_current_date_time(system_instruction)
+    chat_message = (
+        str(shared_history[-1].get("content", ""))
+        if shared_history
+        else ""
+    )
+    await log_event_pgsql(
+        request_id=request_id,
+        chat_message=chat_message,
+        service_name="llm",
+        script_name="gemini_chat.py",
+        event_type="call_gemini_client",
+        chat_history=shared_history,
+    )
     response = await gemini_client.generate_response(
+        request_id=request_id,
         contents=gemini_history,
         system_instruction=system_instruction,
         tools=gemini_tools,
+        chat_history=shared_history,
+    )
+    await log_llm_call_pgsql(
+        request_id=request_id,
+        calling_agent_name=calling_agent,
+        message_sent=json.dumps(
+            {
+                "chat_history": shared_history,
+                "system_instructions": system_instruction,
+                "tools": [
+                    tool.model_dump(mode="json", exclude_none=True)
+                    for tool in gemini_tools
+                ],
+            },
+            default=str,
+        ),
+        message_response=response.model_dump_json(exclude_none=True),
     )
     reply = response.text.strip() if response.text else ""
     tool_calls = [

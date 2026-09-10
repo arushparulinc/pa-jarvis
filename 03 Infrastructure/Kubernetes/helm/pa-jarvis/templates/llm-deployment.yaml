@@ -12,6 +12,15 @@ spec:
       labels:
         app: llm
     spec:
+      initContainers:
+        - name: wait-for-storage
+          image: busybox:1.36.1
+          command:
+            - sh
+            - -c
+            - >-
+              until wget -qO- http://storage:8004/health > /dev/null;
+              do echo "Waiting for Storage service"; sleep 2; done
       containers:
         - name: llm
           image: "{{ .Values.llm.image.repository }}:{{ .Values.llm.image.tag }}"
@@ -19,6 +28,15 @@ spec:
 
           ports:
             - containerPort: 8002
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 6
+            failureThreshold: 3
 
           env:
             - name: STORAGE_SERVICE_URL

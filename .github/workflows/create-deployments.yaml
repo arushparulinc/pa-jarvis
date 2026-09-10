@@ -1,0 +1,68 @@
+name: Create Deployment Branches
+
+on:
+  workflow_call:
+    inputs:
+      image_sha:
+        description: Dev commit SHA used to build and tag the images
+        required: true
+        type: string
+
+jobs:
+  create-deployment:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - environment: dev
+            deployment_branch: dev-deployment
+            values_file: 03 Infrastructure/Kubernetes/helm/pa-jarvis/values-dev.yaml
+
+          - environment: prd
+            deployment_branch: prd-deployment
+            values_file: 03 Infrastructure/Kubernetes/helm/pa-jarvis/values-prd.yaml
+
+    steps:
+      - name: Checkout built dev commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.image_sha }}
+          fetch-depth: 0
+
+      - name: Create ${{ matrix.deployment_branch }} from built dev commit
+        run: |
+          git checkout -B "${{ matrix.deployment_branch }}" "${{ inputs.image_sha }}"
+
+      - name: Update ${{ matrix.values_file }} image tags
+        env:
+          IMAGE_TAG: sha-${{ inputs.image_sha }}
+          VALUES_FILE: ${{ matrix.values_file }}
+        run: |
+          echo "Updating ${VALUES_FILE} images to ${IMAGE_TAG}"
+
+          sed -i "s|tag: sha-[a-f0-9]*|tag: ${IMAGE_TAG}|g" "$VALUES_FILE"
+
+          echo "Updated image tags:"
+          grep "tag:" "$VALUES_FILE"
+
+      - name: Commit deployment change
+        env:
+          IMAGE_TAG: sha-${{ inputs.image_sha }}
+          VALUES_FILE: ${{ matrix.values_file }}
+          ENVIRONMENT: ${{ matrix.environment }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add "$VALUES_FILE"
+
+          if git diff --cached --quiet; then
+            echo "No image tag changes required."
+          else
+            git commit -m "chore(${ENVIRONMENT}): deploy ${IMAGE_TAG}"
+          fi
+
+      - name: Push ${{ matrix.deployment_branch }}
+        run: |
+          git push --force origin "HEAD:${{ matrix.deployment_branch }}"
