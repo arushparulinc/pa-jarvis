@@ -1,38 +1,48 @@
 traefikIngress:
   host: chat.arushparulinc.com
+  entryPoint: websecure
+  tls:
+    enabled: true
+    certResolver: letsencrypt
+
+devUpstream:
+  enabled: true
+  host: dev.chat.arushparulinc.com
+  ip: "192.168.0.10"
+  port: 80
 
 frontend:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-frontend
-    tag: sha-810afe53357f6c46c793e667a5efb617ffc4d438
+    tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
     pullPolicy: IfNotPresent
 
 backend:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-backend
-    tag: sha-810afe53357f6c46c793e667a5efb617ffc4d438
+    tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
     pullPolicy: IfNotPresent
 
 agents:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-agents
-    tag: sha-810afe53357f6c46c793e667a5efb617ffc4d438
+    tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
     pullPolicy: IfNotPresent
 
 llm:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-llm
-    tag: sha-810afe53357f6c46c793e667a5efb617ffc4d438
+    tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
     pullPolicy: IfNotPresent
 
 tools:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-tools
-    tag: sha-810afe53357f6c46c793e667a5efb617ffc4d438
+    tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
     pullPolicy: IfNotPresent
 
 storage:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-storage
-    tag: sha-810afe53357f6c46c793e667a5efb617ffc4d438
+    tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
     pullPolicy: IfNotPresent
