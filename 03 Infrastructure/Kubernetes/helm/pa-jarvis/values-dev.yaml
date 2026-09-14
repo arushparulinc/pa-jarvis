@@ -1,5 +1,15 @@
 traefikIngress:
   host: dev.chat.arushparulinc.com
+  entryPoint: web
+  tls:
+    enabled: false
+    certResolver: ""
+
+devUpstream:
+  enabled: false
+  host: dev.chat.arushparulinc.com
+  ip: ""
+  port: 80
 
 frontend:
   image:
