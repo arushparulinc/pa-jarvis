@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-config
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/arushparulinc/pa-jarvis.git
+    targetRevision: main
+    path: "03 Infrastructure/Kubernetes/argocd"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: false
+      selfHeal: true
+      allowEmpty: false
+
+    syncOptions:
+      - ServerSideApply=true
