@@ -16,5 +16,13 @@ spec:
         - name: frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - >-
+              sed -i "s|__NJS_ENV__|${NJS_ENV}|g" /usr/share/nginx/html/index.html &&
+              exec nginx -g 'daemon off;'
+          env:
+            - name: NJS_ENV
+              value: {{ .Values.frontend.njsEnv | quote }}
           ports:
             - containerPort: 80
