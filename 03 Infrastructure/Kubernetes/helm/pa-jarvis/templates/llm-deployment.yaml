@@ -43,11 +43,8 @@ spec:
               value: "http://storage:8004"
             - name: OLLAMA_HOST
               value: "http://192.168.0.30:11434"
-            - name: GEMINI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: llm-secrets
-                  key: GEMINI_API_KEY
           envFrom:
+            - secretRef:
+                name: llm-secrets
             - secretRef:
                 name: storage-db-secrets
