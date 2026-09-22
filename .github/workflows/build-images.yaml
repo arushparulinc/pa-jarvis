@@ -50,6 +50,10 @@ jobs:
             context: "02 Source/Storage"
             image: pa-jarvis-storage
 
+          - service: scripts
+            context: "04 Scripts"
+            image: pa-jarvis-scripts
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
