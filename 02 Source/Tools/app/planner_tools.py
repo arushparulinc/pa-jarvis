@@ -1,6 +1,7 @@
 import asyncio
 import os
-from datetime import datetime, time, timedelta
+from difflib import SequenceMatcher
+from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -207,26 +208,54 @@ def _task_record(row: asyncpg.Record) -> dict[str, object]:
     return {
         "task_id": row["task_id"],
         "task_name": row["task_name"],
+        "task_priority": row["task_priority"],
         "task_description": row["task_description"],
+        "task_status": row["task_status"],
         "created_at": row["created_at"].isoformat(),
+        "closed_at": row["closed_at"].isoformat() if row["closed_at"] else None,
     }
+
+
+def _closest_task(rows: list[asyncpg.Record], task_name: str, *, mutation: bool = False) -> asyncpg.Record | None:
+    search_name = task_name.strip().casefold()
+    if not search_name:
+        raise PlannerError("task_name must not be empty.")
+
+    ranked = sorted(
+        (
+            (SequenceMatcher(None, search_name, row["task_name"].strip().casefold()).ratio(), row)
+            for row in rows
+        ),
+        key=lambda match: match[0],
+        reverse=True,
+    )
+    minimum_score = 0.8 if mutation else 0.6
+    if not ranked or ranked[0][0] < minimum_score:
+        return None
+    if mutation and len(ranked) > 1 and ranked[0][0] - ranked[1][0] < 0.1:
+        raise PlannerError("Task name is ambiguous; please provide a more specific name.")
+    return ranked[0][1]
 
 
 async def add_task(
     task_name: str,
     task_description: str = "",
+    task_priority: str = "Not-Defined",
+    task_status: str = "Open",
 ) -> dict[str, object]:
     """Add a task to the PostgreSQL task list."""
     connection = await _connect_postgres()
     try:
         row = await connection.fetchrow(
             """
-            INSERT INTO toolsdata.task_list (task_name, task_description)
-            VALUES ($1, $2)
-            RETURNING task_id, task_name, task_description, created_at
+            INSERT INTO toolsdata.task_list (task_name, task_description, task_priority, task_status)
+            VALUES ($1, $2, $3, $4)
+            RETURNING task_id, task_name, task_priority, task_description, task_status, created_at, closed_at
             """,
             task_name,
             task_description or None,
+            task_priority or "Not-Defined",
+            task_status or "Open",
         )
         return _task_record(row)
     except asyncpg.UniqueViolationError as exc:
@@ -235,19 +264,63 @@ async def add_task(
         await connection.close()
 
 
-async def get_task(task_id: int) -> dict[str, object] | None:
-    """Get one task by ID."""
+async def get_task(task_name: str) -> dict[str, object] | None:
+    """Get the closest matching task by name, or None if none is close enough."""
     connection = await _connect_postgres()
     try:
-        row = await connection.fetchrow(
+        rows = await connection.fetch(
             """
-            SELECT task_id, task_name, task_description, created_at
+            SELECT task_id, task_name, task_priority, task_description, task_status, created_at, closed_at
             FROM toolsdata.task_list
-            WHERE task_id = $1
-            """,
-            task_id,
+            """
         )
-        return _task_record(row) if row else None
+        match = _closest_task(rows, task_name)
+        return _task_record(match) if match else None
+    finally:
+        await connection.close()
+
+
+async def update_task(
+    task_name: str,
+    task_status: str | None = None,
+    task_priority: str | None = None,
+    closed_at: str | None = None,
+) -> dict[str, object] | None:
+    """Update the closest unambiguous task by name."""
+    if task_status is None and task_priority is None and closed_at is None:
+        raise PlannerError("Provide task_status, task_priority, or closed_at to update.")
+
+    closed_at_value = None
+    if closed_at is not None:
+        try:
+            closed_at_value = datetime.fromisoformat(closed_at)
+        except ValueError as exc:
+            raise PlannerError("closed_at must be an ISO 8601 date-time.") from exc
+        if closed_at_value.tzinfo is not None:
+            closed_at_value = closed_at_value.astimezone(timezone.utc).replace(tzinfo=None)
+
+    connection = await _connect_postgres()
+    try:
+        async with connection.transaction():
+            rows = await connection.fetch(
+                "SELECT task_id, task_name FROM toolsdata.task_list FOR UPDATE"
+            )
+            match = _closest_task(rows, task_name, mutation=True)
+            if match is None:
+                return None
+            row = await connection.fetchrow(
+                """
+                UPDATE toolsdata.task_list
+                SET task_status = COALESCE($2, task_status),
+                    task_priority = COALESCE($3, task_priority),
+                    closed_at = COALESCE($4, closed_at)
+                WHERE task_id = $1
+                RETURNING task_id, task_name, task_priority, task_description,
+                          task_status, created_at, closed_at
+                """,
+                match["task_id"], task_status, task_priority, closed_at_value,
+            )
+            return _task_record(row)
     finally:
         await connection.close()
 
@@ -258,7 +331,7 @@ async def list_tasks() -> list[dict[str, object]]:
     try:
         rows = await connection.fetch(
             """
-            SELECT task_id, task_name, task_description, created_at
+            SELECT task_id, task_name, task_priority, task_description, task_status, created_at, closed_at
             FROM toolsdata.task_list
             ORDER BY created_at DESC, task_id DESC
             """
@@ -268,24 +341,25 @@ async def list_tasks() -> list[dict[str, object]]:
         await connection.close()
 
 
-async def delete_tasks(task_ids: list[int] | str) -> dict[str, object]:
-    """Delete tasks by ID and return the IDs that were deleted."""
-    if isinstance(task_ids, str):
-        try:
-            task_ids = [int(value.strip()) for value in task_ids.split(",")]
-        except ValueError as exc:
-            raise PlannerError("task_ids must contain comma-separated integers.") from exc
-
+async def delete_task(task_name: str) -> dict[str, object]:
+    """Delete the closest unambiguous task by name."""
     connection = await _connect_postgres()
     try:
-        rows = await connection.fetch(
-            """
-            DELETE FROM toolsdata.task_list
-            WHERE task_id = ANY($1::bigint[])
-            RETURNING task_id
-            """,
-            task_ids,
-        )
-        return {"deleted_task_ids": [row["task_id"] for row in rows]}
+        async with connection.transaction():
+            rows = await connection.fetch(
+                "SELECT task_id, task_name FROM toolsdata.task_list FOR UPDATE"
+            )
+            match = _closest_task(rows, task_name, mutation=True)
+            if match is None:
+                return {"deleted": False}
+            row = await connection.fetchrow(
+                """
+                DELETE FROM toolsdata.task_list
+                WHERE task_id = $1
+                RETURNING task_id, task_name
+                """,
+                match["task_id"],
+            )
+            return {"deleted": True, "task_id": row["task_id"], "task_name": row["task_name"]}
     finally:
         await connection.close()

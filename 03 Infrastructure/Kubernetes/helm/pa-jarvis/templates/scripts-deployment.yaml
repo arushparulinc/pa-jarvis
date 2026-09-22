@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scripts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scripts
+  template:
+    metadata:
+      labels:
+        app: scripts
+    spec:
+      containers:
+        - name: scripts
+          image: "{{ .Values.scripts.image.repository }}:{{ .Values.scripts.image.tag }}"
+          imagePullPolicy: {{ .Values.scripts.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: storage-db-secrets
+          ports:
+            - containerPort: 8005
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8005
+            initialDelaySeconds: 5
+            periodSeconds: 10

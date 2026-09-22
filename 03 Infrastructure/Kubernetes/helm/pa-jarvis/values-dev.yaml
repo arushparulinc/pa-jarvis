@@ -46,3 +46,9 @@ storage:
     repository: ghcr.io/arushparulinc/pa-jarvis-storage
     tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
     pullPolicy: IfNotPresent
+
+scripts:
+  image:
+    repository: ghcr.io/arushparulinc/pa-jarvis-scripts
+    tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
+    pullPolicy: IfNotPresent
