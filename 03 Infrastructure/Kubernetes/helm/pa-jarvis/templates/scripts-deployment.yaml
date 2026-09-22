@@ -19,6 +19,8 @@ spec:
           envFrom:
             - secretRef:
                 name: storage-db-secrets
+            - secretRef:
+                name: google-oauth-secrets
           ports:
             - containerPort: 8005
           readinessProbe:

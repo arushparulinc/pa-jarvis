@@ -1,4 +1,5 @@
 import os
+import importlib
 from contextlib import asynccontextmanager
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -6,7 +7,10 @@ import asyncpg
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
-from .scheduler import media, misc, reminders
+
+media = importlib.import_module("app.001 Scheduler.media")
+misc = importlib.import_module("app.001 Scheduler.misc")
+reminders = importlib.import_module("app.001 Scheduler.reminders")
 
 
 @asynccontextmanager
