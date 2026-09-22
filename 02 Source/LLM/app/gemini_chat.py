@@ -16,10 +16,10 @@ def _append_current_date_time(system_instruction: str) -> str:
     current = datetime.now(LLM_TIME_ZONE)
     useful_info = (
         "USEFUL INFO\n"
-        f"Date: {current:%Y-%m-%d}\n"
-        f"Time: {current:%H:%M:%S}\n"
+        f"Current Date: {current:%Y-%m-%d}\n"
+        f"Current Time: {current:%H:%M:%S}\n"
         f"Timezone: America/Toronto ({current.tzname()})\n"
-        f"Day of the Week: {current:%A}"
+        f"Today is: {current:%A}"
     )
     return f"{system_instruction.rstrip()}\n\n{useful_info}"
 

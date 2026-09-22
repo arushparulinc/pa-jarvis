@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const API_URL = `${API_BASE_URL}/api/chat`;
@@ -133,6 +133,14 @@ function App() {
   const [messages, setMessages] = useState([
     { id: 1, role: "assistant", text: "Hi! I’m Jarvis. How can I help you today?" },
   ]);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [messages, isSending]);
 
   const sendMessage = async (text) => {
     const cleanText = text.trim();
@@ -242,6 +250,7 @@ function App() {
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         <div style={styles.composerArea}>
