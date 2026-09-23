@@ -72,3 +72,14 @@ services:
       - "8004:8004"
     env_file:
       - ./Storage/.env
+
+  scripts:
+    build:
+      context: ../04 Scripts
+    ports:
+      - "8005:8005"
+    env_file:
+      - ./Storage/.env
+      - ./Tools/.env
+    depends_on:
+      - storage
