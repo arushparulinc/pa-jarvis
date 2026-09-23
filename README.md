@@ -40,7 +40,7 @@ pa-jarvis/
 │   └── Ansible/
 │
 ├── 04 Scripts/                      # Dev and ops scripts
-├── 05 Tests/                        # Unit/, Integration/, E2E/
+├── 05 Analytics/                    # Analytics dashboard and retained test folders
 └── 06 Assets/                       # Images/, Icons/, Diagrams/
 ```
 

@@ -3,6 +3,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import asyncpg
 
+from ..call_storage import log_scheduler_event
 from ..reminder import events, shopping, tasks
 from .schedule_store import load_schedules
 
@@ -23,3 +24,8 @@ async def register_jobs(scheduler: AsyncIOScheduler, connection: asyncpg.Connect
             max_instances=1,
             coalesce=True,
         )
+    await log_scheduler_event(
+        event_name=f"Loaded {len(SCRIPT_SCHEDULES)} schedule(s)",
+        event_type="SchedulesLoaded",
+        scheduler_name="reminders",
+    )

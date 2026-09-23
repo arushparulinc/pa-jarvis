@@ -34,7 +34,7 @@ async def log_event_pgsql(
 
     try:
         async with httpx.AsyncClient(timeout=DEFAULT_TIMEOUT_SECONDS) as client:
-            response = await client.post(f"{base_url}/log-event", json=payload)
+            response = await client.post(f"{base_url}/log-service-event", json=payload)
         return response.is_success
     except httpx.RequestError:
         return False

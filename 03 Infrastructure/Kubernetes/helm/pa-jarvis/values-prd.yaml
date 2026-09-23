@@ -53,3 +53,10 @@ scripts:
     repository: ghcr.io/arushparulinc/pa-jarvis-scripts
     tag: sha-b1a2498371402e9a333fa99c261cd7a8c1f461e4
     pullPolicy: IfNotPresent
+
+analytics:
+  host: dashboard.arushparulinc.com
+  image:
+    repository: ghcr.io/arushparulinc/pa-jarvis-analytics
+    tag: sha-08cea2e5eb1622d944723b62168a26e83f48909e
+    pullPolicy: IfNotPresent

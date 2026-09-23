@@ -31,7 +31,7 @@ jobs:
             image: pa-jarvis-frontend
 
           - service: backend
-            context: "02 Source/Backend/fastpy_backend"
+            context: "02 Source/Backend/agent_router_fastpy"
             image: pa-jarvis-backend
 
           - service: agents
@@ -53,6 +53,10 @@ jobs:
           - service: scripts
             context: "04 Scripts"
             image: pa-jarvis-scripts
+
+          - service: analytics
+            context: "05 Analytics/analytics_dashboard_fastpy"
+            image: pa-jarvis-analytics
 
     steps:
       - name: Checkout repository
