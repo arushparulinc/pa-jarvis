@@ -1,0 +1,14 @@
+[project]
+name = "pa-jarvis-analytics"
+version = "0.1.0"
+description = "Server-rendered analytics dashboard for PA Jarvis"
+requires-python = ">=3.13"
+dependencies = [
+    "asyncpg>=0.31.0",
+    "fastapi[standard]>=0.139.0",
+    "jinja2>=3.1.6",
+    "uvicorn>=0.51.0",
+]
+
+[tool.uv]
+package = false

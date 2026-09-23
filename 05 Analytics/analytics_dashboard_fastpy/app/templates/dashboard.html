@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PA Jarvis Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">PA Jarvis Analytics</p>
+        <h1>High-priority overview</h1>
+        <p class="summary">
+          {{ tasks|length }} task{{ '' if tasks|length == 1 else 's' }} and
+          {{ shopping_items|length }} shopping item{{ '' if shopping_items|length == 1 else 's' }}
+        </p>
+      </header>
+
+      <section class="dashboard-grid" aria-label="High-priority records">
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Tasks</h2>
+            <span class="count">{{ tasks|length }}</span>
+          </div>
+          {% if tasks %}
+            <div class="records">
+              {% for task in tasks %}
+                <div class="record">
+                  <div>
+                    <h3>{{ task.task_name }}</h3>
+                    {% if task.task_description %}<p>{{ task.task_description }}</p>{% endif %}
+                  </div>
+                  <span class="status status-{{ task.task_status|lower|replace(' ', '-') }}">
+                    {{ task.task_status }}
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="empty-state">No high-priority tasks.</p>
+          {% endif %}
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Shopping list</h2>
+            <span class="count">{{ shopping_items|length }}</span>
+          </div>
+          {% if shopping_items %}
+            <div class="records">
+              {% for item in shopping_items %}
+                <div class="record">
+                  <div>
+                    <h3>{{ item.item_name }}</h3>
+                    {% if item.item_description %}<p>{{ item.item_description }}</p>{% endif %}
+                  </div>
+                  <span class="status status-{{ item.item_status|lower|replace(' ', '-') }}">
+                    {{ item.item_status }}
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="empty-state">No high-priority shopping items.</p>
+          {% endif %}
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

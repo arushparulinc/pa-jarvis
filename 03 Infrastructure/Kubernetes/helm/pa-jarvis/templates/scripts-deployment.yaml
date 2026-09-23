@@ -16,11 +16,22 @@ spec:
         - name: scripts
           image: "{{ .Values.scripts.image.repository }}:{{ .Values.scripts.image.tag }}"
           imagePullPolicy: {{ .Values.scripts.image.pullPolicy }}
+          env:
+            - name: AK_GOOGLE_APPLICATION_CREDENTIALS
+              value: "/app/ak-secrets/service-account.json"
+            - name: AK_GDRIVE_ROOT_FOLDER
+              value: "1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H"
+            - name: STORAGE_SERVICE_URL
+              value: "http://storage:8004"
           envFrom:
             - secretRef:
                 name: storage-db-secrets
             - secretRef:
                 name: google-oauth-secrets
+          volumeMounts:
+            - name: ak-google-drive-service-account
+              mountPath: /app/ak-secrets
+              readOnly: true
           ports:
             - containerPort: 8005
           readinessProbe:
@@ -29,3 +40,10 @@ spec:
               port: 8005
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        - name: ak-google-drive-service-account
+          secret:
+            secretName: google-drive-service-account
+            items:
+              - key: service-account.json
+                path: service-account.json

@@ -9,11 +9,11 @@ services:
 
   backend:
     build:
-      context: ./Backend/fastpy_backend
+      context: ./Backend/agent_router_fastpy
     ports:
       - "8000:8000"
     env_file:
-      - ./Backend/fastpy_backend/.env
+      - ./Backend/agent_router_fastpy/.env
     environment:
       MASTER_AGENT_URL: http://agents:8001
       STORAGE_SERVICE_URL: http://storage:8004
@@ -81,5 +81,21 @@ services:
     env_file:
       - ./Storage/.env
       - ./Tools/.env
+    environment:
+      AK_GOOGLE_APPLICATION_CREDENTIALS: /app/ak-secrets/service-account.json
+      AK_GDRIVE_ROOT_FOLDER: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
+      STORAGE_SERVICE_URL: http://storage:8004
+    volumes:
+      - ./Tools/credentials/service-account.json:/app/ak-secrets/service-account.json:ro
+    depends_on:
+      - storage
+
+  analytics:
+    build:
+      context: ../05 Analytics/analytics_dashboard_fastpy
+    ports:
+      - "8006:8006"
+    env_file:
+      - ./Storage/.env
     depends_on:
       - storage

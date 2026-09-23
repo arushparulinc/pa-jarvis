@@ -6,6 +6,7 @@ import os
 
 import asyncpg
 
+from ..call_storage import log_script_execution
 
 gmail = importlib.import_module("app.002 Comms.gmail")
 
@@ -34,6 +35,7 @@ def _format_email(rows: list[asyncpg.Record]) -> str:
     return "\n".join(lines).rstrip()
 
 
+@log_script_execution("reminder.shopping")
 async def run() -> dict[str, str]:
     """Read all high-priority shopping items and email the formatted list."""
     connection = await _connect_postgres()
