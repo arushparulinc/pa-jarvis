@@ -7,4 +7,4 @@ services:
     ports:
       - "8006:8006"
     env_file:
-      - ../../02 Source/Storage/.env
+      - .env
