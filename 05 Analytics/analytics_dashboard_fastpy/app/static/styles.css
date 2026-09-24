@@ -1,0 +1,40 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0b1020;
+  color: #f6f7fb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(77, 112, 255, 0.24), transparent 34rem),
+    #0b1020;
+}
+
+.page-shell { width: min(1180px, calc(100% - 2rem)); margin: 0 auto; padding: 4rem 0; }
+.hero { margin-bottom: 2rem; }
+.eyebrow { color: #8ea2ff; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+h1 { margin: 0.25rem 0 0.5rem; font-size: clamp(2.2rem, 7vw, 4.75rem); letter-spacing: -0.055em; }
+.summary { margin: 0; color: #aeb7cf; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+.panel { overflow: hidden; border: 1px solid #27304a; border-radius: 1.25rem; background: rgba(17, 24, 43, 0.88); box-shadow: 0 1rem 4rem rgba(0, 0, 0, 0.2); }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.4rem; border-bottom: 1px solid #27304a; }
+.panel-heading h2 { margin: 0; font-size: 1.1rem; }
+.count { display: grid; min-width: 2rem; height: 2rem; place-items: center; border-radius: 999px; background: #27355d; color: #cbd4ff; font-weight: 800; }
+.records { display: grid; }
+.record { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.15rem 1.4rem; }
+.record + .record { border-top: 1px solid #202943; }
+.record h3 { margin: 0; font-size: 1rem; }
+.record p { margin: 0.35rem 0 0; color: #aeb7cf; line-height: 1.5; }
+.status { flex: 0 0 auto; padding: 0.35rem 0.65rem; border-radius: 999px; background: #303950; color: #d7ddec; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
+.status-open { background: rgba(42, 203, 141, 0.15); color: #75e6b8; }
+.empty-state { margin: 0; padding: 2.5rem 1.4rem; color: #8994b0; text-align: center; }
+
+@media (max-width: 760px) {
+  .page-shell { padding: 2.5rem 0; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+}

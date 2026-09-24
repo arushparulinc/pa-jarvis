@@ -2,8 +2,4 @@
 .uv-cache/
 __pycache__/
 *.py[cod]
-.pytest_cache/
-tests/
 .env
-.env.*
-.git/

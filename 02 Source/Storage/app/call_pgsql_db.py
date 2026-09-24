@@ -21,7 +21,7 @@ async def check_postgres_health() -> None:
         await connection.close()
 
 
-async def log_event_pgsql(
+async def log_service_event_pgsql(
     request_id: str,
     service_name: str,
     script_name: str,
@@ -68,6 +68,86 @@ async def log_event_pgsql(
         raise RuntimeError(
             "PostgreSQL table 'logging.service_events' does not match "
             "the required event-log structure."
+        ) from exc
+    finally:
+        await connection.close()
+
+
+async def log_script_event_pgsql(
+    event_name: str,
+    event_type: str,
+    script_name: str,
+) -> None:
+    """Insert one Scripts-service event into PostgreSQL."""
+    connection = await asyncpg.connect(
+        host=os.getenv("PGSQL_HOSTNAME"),
+        port=int(os.getenv("PGSQL_PORT", "5432")),
+        user=os.getenv("PGSQL_USER"),
+        password=os.getenv("PGSQL_PASSWORD"),
+        database=os.getenv("PGSQL_DBNAME"),
+    )
+    try:
+        await connection.execute(
+            """
+            INSERT INTO logging.script_events (
+                event_name,
+                event_type,
+                script_name
+            )
+            VALUES ($1, $2, $3)
+            """,
+            event_name,
+            event_type,
+            script_name,
+        )
+    except asyncpg.UndefinedTableError as exc:
+        raise RuntimeError(
+            "PostgreSQL table 'logging.script_events' was not found."
+        ) from exc
+    except asyncpg.UndefinedColumnError as exc:
+        raise RuntimeError(
+            "PostgreSQL table 'logging.script_events' does not match "
+            "the required script-event structure."
+        ) from exc
+    finally:
+        await connection.close()
+
+
+async def log_scheduler_event_pgsql(
+    event_name: str,
+    event_type: str,
+    scheduler_name: str,
+) -> None:
+    """Insert one scheduler event into PostgreSQL."""
+    connection = await asyncpg.connect(
+        host=os.getenv("PGSQL_HOSTNAME"),
+        port=int(os.getenv("PGSQL_PORT", "5432")),
+        user=os.getenv("PGSQL_USER"),
+        password=os.getenv("PGSQL_PASSWORD"),
+        database=os.getenv("PGSQL_DBNAME"),
+    )
+    try:
+        await connection.execute(
+            """
+            INSERT INTO logging.scheduler_events (
+                event_name,
+                event_type,
+                scheduler_name
+            )
+            VALUES ($1, $2, $3)
+            """,
+            event_name,
+            event_type,
+            scheduler_name,
+        )
+    except asyncpg.UndefinedTableError as exc:
+        raise RuntimeError(
+            "PostgreSQL table 'logging.scheduler_events' was not found."
+        ) from exc
+    except asyncpg.UndefinedColumnError as exc:
+        raise RuntimeError(
+            "PostgreSQL table 'logging.scheduler_events' does not match "
+            "the required scheduler-event structure."
         ) from exc
     finally:
         await connection.close()

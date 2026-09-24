@@ -1,7 +1,7 @@
 [project]
-name = "fastpy-backend"
+name = "pa-jarvis-agent-router"
 version = "0.1.0"
-description = "Add your description here"
+description = "HTTP API that routes PA Jarvis chat requests to the master agent"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

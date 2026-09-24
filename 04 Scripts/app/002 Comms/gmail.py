@@ -17,7 +17,14 @@ class GmailError(RuntimeError):
     """Raised when an email cannot be sent through the Gmail API."""
 
 
-def gmail_send_email(subject_line: str, body: str) -> dict[str, str]:
+def gmail_send_email(
+    subject_line: str,
+    body: str,
+    *,
+    attachment_name: str | None = None,
+    attachment_content: bytes | None = None,
+    attachment_mime_type: str = "application/octet-stream",
+) -> dict[str, str]:
     """Send a plain-text email to the configured recipient using OAuth."""
     if not subject_line.strip():
         raise GmailError("The email subject line is required.")
@@ -55,6 +62,18 @@ def gmail_send_email(subject_line: str, body: str) -> dict[str, str]:
     message["To"] = GMAIL_RECIPIENT
     message["Subject"] = subject_line
     message.set_content(body)
+    if attachment_content is not None:
+        if not attachment_name:
+            raise GmailError("An attachment name is required when attachment content is provided.")
+        maintype, separator, subtype = attachment_mime_type.partition("/")
+        if not separator:
+            maintype, subtype = "application", "octet-stream"
+        message.add_attachment(
+            attachment_content,
+            maintype=maintype,
+            subtype=subtype,
+            filename=attachment_name,
+        )
     encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
 
     try:

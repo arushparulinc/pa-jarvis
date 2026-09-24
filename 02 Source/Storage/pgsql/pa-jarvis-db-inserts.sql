@@ -2,8 +2,15 @@
 -- BUILD CONFIGURATIONS DATA 
 -----------------------------
 
+-- Execution Commands on Windows/Powershell
+-------------------------------------------
 -- psql -U postgres -v target_db="pa-jarvis-dev" -f "C:\apinc\pgsql\pa-jarvis-db-inserts.sql"
 -- psql -U postgres -v target_db="pa-jarvis-prd" -f "C:\apinc\pgsql\pa-jarvis-db-inserts.sql"
+
+-- Execution Command on Linux 
+------------------------------
+-- sudo -u postgres psql -v target_db="pa-jarvis-dev" -v pgsql_user="pa_jarvis_app_dev" -f /apinc/pa-jarvis/storage/pgsql/pa-jarvis-db-inserts.sql
+-- sudo -u postgres psql -v target_db="pa-jarvis-prd" -v pgsql_user="pa_jarvis_app_prd" -f /apinc/pa-jarvis/storage/pgsql/pa-jarvis-db-inserts.sql
 
 
 -- CONNECT TO DATABASE
