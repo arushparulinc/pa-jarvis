@@ -9,10 +9,10 @@ async def load_schedules(
     connection: asyncpg.Connection,
     sched_types: Sequence[str],
     scripts: dict[str, Callable[[], object]],
-) -> dict[str, dict[str, object]]:
+) -> dict[int, dict[str, object]]:
     rows = await connection.fetch(
         """
-        SELECT sched_name, sched_day_of_week, sched_hour, sched_minute
+        SELECT sched_id, sched_name, sched_day_of_week, sched_hour, sched_minute
         FROM config.script_schedules
         WHERE sched_type = ANY($1::varchar[])
         ORDER BY sched_id
@@ -20,13 +20,12 @@ async def load_schedules(
         list(sched_types),
     )
 
-    schedules: dict[str, dict[str, object]] = {}
+    schedules: dict[int, dict[str, object]] = {}
     for row in rows:
+        schedule_id = int(row["sched_id"])
         name = row["sched_name"].strip().casefold()
         if name not in scripts:
             raise ValueError(f"Unknown script schedule: {sched_types[0]}/{name}")
-        if name in schedules:
-            raise ValueError(f"Duplicate script schedule: {sched_types[0]}/{name}")
 
         day_of_week = row["sched_day_of_week"].strip()
         hour = row["sched_hour"]
@@ -36,7 +35,8 @@ async def load_schedules(
         if not 0 <= hour <= 23 or not 0 <= minute <= 59:
             raise ValueError(f"Invalid time for script schedule: {sched_types[0]}/{name}")
 
-        schedules[name] = {
+        schedules[schedule_id] = {
+            "script_name": name,
             "func": scripts[name],
             "trigger": "cron",
             "trigger_args": {
