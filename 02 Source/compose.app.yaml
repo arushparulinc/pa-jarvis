@@ -99,3 +99,7 @@ services:
       - ./Storage/.env
     depends_on:
       - storage
+
+networks:
+  default:
+    name: pa-jarvis-dev

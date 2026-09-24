@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>PA Jarvis Dashboard — UI Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/dashboard_demo.css">
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="PA Jarvis dashboard home">
+          <span class="brand-mark">J</span>
+          <span>
+            <strong>PA Jarvis</strong>
+            <small>Analytics</small>
+          </span>
+        </a>
+        <div class="topbar-actions">
+          <span class="sync-status"><span class="status-dot"></span>Live data</span>
+          <button class="icon-button" type="button" aria-label="Refresh dashboard">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+          </button>
+          <div class="avatar" aria-label="User profile">AK</div>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div>
+          <p class="kicker">Wednesday, September 24</p>
+          <h1>Good evening, Arush.</h1>
+          <p class="hero-copy">Here’s what needs your attention today.</p>
+        </div>
+        <div class="priority-summary">
+          <span class="priority-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4m0 4h.01M10.3 3.8 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/></svg>
+          </span>
+          <span><strong>7</strong><small>high-priority items</small></span>
+        </div>
+      </section>
+
+      <section class="metric-grid" aria-label="Dashboard summary">
+        <article class="metric-card">
+          <span class="metric-label">Open tasks</span>
+          <div class="metric-value"><strong>4</strong><span class="trend">2 due soon</span></div>
+          <div class="progress"><span style="width: 68%"></span></div>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Shopping items</span>
+          <div class="metric-value"><strong>3</strong><span class="trend neutral">1 purchased</span></div>
+          <div class="progress shopping-progress"><span style="width: 34%"></span></div>
+        </article>
+        <article class="metric-card focus-card">
+          <span class="metric-label">Next up</span>
+          <div class="next-item"><strong>Submit tax documents</strong><span>Due tomorrow</span></div>
+        </article>
+      </section>
+
+      <section class="content-grid" aria-label="High-priority records">
+        <article class="list-panel">
+          <header class="panel-header">
+            <div>
+              <span class="section-icon task-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 11 2 2 4-4M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>
+              </span>
+              <span><h2>Priority tasks</h2><p>Important work to complete</p></span>
+            </div>
+            <span class="item-count">4 items</span>
+          </header>
+
+          <div class="items">
+            <article class="list-item">
+              <button class="check" type="button" aria-label="Mark Submit tax documents complete"></button>
+              <div class="item-body">
+                <div class="item-title"><h3>Submit tax documents</h3><span class="badge urgent">Due tomorrow</span></div>
+                <p>Upload the final statements and receipts for review.</p>
+                <div class="meta"><span>Finance</span><span class="meta-dot"></span><time>Sep 25</time></div>
+              </div>
+              <button class="more" aria-label="Task options">•••</button>
+            </article>
+
+            <article class="list-item">
+              <button class="check" type="button" aria-label="Mark Renew home insurance complete"></button>
+              <div class="item-body">
+                <div class="item-title"><h3>Renew home insurance</h3><span class="badge">Open</span></div>
+                <p>Compare the renewal quote with two other providers.</p>
+                <div class="meta"><span>Personal</span><span class="meta-dot"></span><time>Sep 28</time></div>
+              </div>
+              <button class="more" aria-label="Task options">•••</button>
+            </article>
+
+            <article class="list-item">
+              <button class="check" type="button" aria-label="Mark Book annual health check complete"></button>
+              <div class="item-body">
+                <div class="item-title"><h3>Book annual health check</h3><span class="badge">Open</span></div>
+                <p>Call the family clinic for an October appointment.</p>
+                <div class="meta"><span>Health</span><span class="meta-dot"></span><time>Oct 01</time></div>
+              </div>
+              <button class="more" aria-label="Task options">•••</button>
+            </article>
+
+            <article class="list-item completed">
+              <button class="check checked" type="button" aria-label="Reopen Pay electricity bill">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12 4 4 8-8"/></svg>
+              </button>
+              <div class="item-body">
+                <div class="item-title"><h3>Pay electricity bill</h3><span class="badge complete">Complete</span></div>
+                <p>September hydro bill paid online.</p>
+                <div class="meta"><span>Home</span><span class="meta-dot"></span><time>Sep 23</time></div>
+              </div>
+              <button class="more" aria-label="Task options">•••</button>
+            </article>
+          </div>
+        </article>
+
+        <article class="list-panel">
+          <header class="panel-header">
+            <div>
+              <span class="section-icon shopping-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H6m4 12h.01M17 20h.01"/></svg>
+              </span>
+              <span><h2>Shopping list</h2><p>High-priority items to pick up</p></span>
+            </div>
+            <span class="item-count">3 items</span>
+          </header>
+
+          <div class="items">
+            <article class="list-item">
+              <button class="check shopping-check" type="button" aria-label="Mark Coffee beans purchased"></button>
+              <div class="item-body">
+                <div class="item-title"><h3>Coffee beans</h3><span class="badge stock">Running low</span></div>
+                <p>Dark roast, whole bean — preferably local.</p>
+                <div class="meta"><span>Groceries</span><span class="meta-dot"></span><span>Qty 2</span></div>
+              </div>
+              <button class="more" aria-label="Shopping item options">•••</button>
+            </article>
+
+            <article class="list-item">
+              <button class="check shopping-check" type="button" aria-label="Mark Printer ink purchased"></button>
+              <div class="item-body">
+                <div class="item-title"><h3>Printer ink</h3><span class="badge">Open</span></div>
+                <p>Black XL cartridge for the office printer.</p>
+                <div class="meta"><span>Office</span><span class="meta-dot"></span><span>Qty 1</span></div>
+              </div>
+              <button class="more" aria-label="Shopping item options">•••</button>
+            </article>
+
+            <article class="list-item completed">
+              <button class="check shopping-check checked" type="button" aria-label="Reopen Dog food">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12 4 4 8-8"/></svg>
+              </button>
+              <div class="item-body">
+                <div class="item-title"><h3>Dog food</h3><span class="badge complete">Purchased</span></div>
+                <p>Large bag of the regular chicken recipe.</p>
+                <div class="meta"><span>Pets</span><span class="meta-dot"></span><span>Qty 1</span></div>
+              </div>
+              <button class="more" aria-label="Shopping item options">•••</button>
+            </article>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        <span><span class="status-dot"></span>Last synced just now</span>
+        <span>PA Jarvis Dashboard · UI concept</span>
+      </footer>
+    </main>
+  </body>
+</html>

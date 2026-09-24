@@ -1,0 +1,24 @@
+name: pa-jarvis-scripts
+
+services:
+  scripts:
+    build:
+      context: .
+    ports:
+      - "8005:8005"
+    env_file:
+      - ../02 Source/Storage/.env
+      - ../02 Source/Tools/.env
+    environment:
+      AK_GOOGLE_APPLICATION_CREDENTIALS: /app/ak-secrets/service-account.json
+      AK_GDRIVE_ROOT_FOLDER: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
+      STORAGE_SERVICE_URL: http://storage:8004
+    volumes:
+      - ../02 Source/Tools/credentials/service-account.json:/app/ak-secrets/service-account.json:ro
+    networks:
+      - pa-jarvis
+
+networks:
+  pa-jarvis:
+    name: pa-jarvis-dev
+    external: true
