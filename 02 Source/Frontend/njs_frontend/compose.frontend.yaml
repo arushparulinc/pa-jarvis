@@ -1,0 +1,8 @@
+name: pa-jarvis-frontend
+
+services:
+  frontend:
+    build:
+      context: .
+    ports:
+      - "5173:80"

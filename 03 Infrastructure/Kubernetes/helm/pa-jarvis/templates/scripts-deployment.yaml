@@ -21,6 +21,8 @@ spec:
               value: "/app/ak-secrets/service-account.json"
             - name: AK_GDRIVE_ROOT_FOLDER
               value: "1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H"
+            - name: GDRIVE_ROOT_FOLDER_ID
+              value: "1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H"
             - name: STORAGE_SERVICE_URL
               value: "http://storage:8004"
           envFrom:
