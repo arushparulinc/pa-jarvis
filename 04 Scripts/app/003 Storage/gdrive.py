@@ -3,9 +3,8 @@
 from datetime import datetime
 from io import BytesIO
 import os
-from pathlib import Path
 
-from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
@@ -24,27 +23,39 @@ class GoogleDriveUploadError(RuntimeError):
 
 
 def _get_drive_service():
-    credentials_value = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
-    if not credentials_value:
+    client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "").strip()
+    refresh_token = os.getenv("GOOGLE_REFRESH_TOKEN", "").strip()
+
+    missing_secrets = [
+        name
+        for name, value in (
+            ("GOOGLE_CLIENT_ID", client_id),
+            ("GOOGLE_CLIENT_SECRET", client_secret),
+            ("GOOGLE_REFRESH_TOKEN", refresh_token),
+        )
+        if not value
+    ]
+    if missing_secrets:
         raise GoogleDriveUploadError(
-            "GOOGLE_APPLICATION_CREDENTIALS is not configured."
+            "Missing Google Drive OAuth configuration: "
+            + ", ".join(missing_secrets)
         )
 
-    credentials_path = Path(credentials_value)
-    if not credentials_path.is_file():
-        raise GoogleDriveUploadError(
-            f"Google service-account file was not found at {credentials_path}."
-        )
+    credentials = Credentials(
+        token=None,
+        refresh_token=refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=GDRIVE_SCOPES,
+    )
 
     try:
-        credentials = service_account.Credentials.from_service_account_file(
-            str(credentials_path),
-            scopes=GDRIVE_SCOPES,
-        )
         return build("drive", "v3", credentials=credentials, cache_discovery=False)
     except (OSError, ValueError) as exc:
         raise GoogleDriveUploadError(
-            f"Google service-account credentials are invalid: {exc}"
+            f"Could not initialize the Google Drive API: {exc}"
         ) from exc
 
 
