@@ -10,7 +10,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
 
 
-GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
+GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 SUPPORTED_FILE_FORMATS = {
     "csv": "text/csv",
     "json": "application/json",
