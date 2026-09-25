@@ -1,7 +1,9 @@
 """Email a summary of all high-priority shopping items."""
 
 import asyncio
+import csv
 import importlib
+from io import StringIO
 import os
 
 import asyncpg
@@ -9,6 +11,9 @@ import asyncpg
 from ..call_storage import log_script_execution
 
 gmail = importlib.import_module("app.002 Comms.gmail")
+gdrive = importlib.import_module("app.003 Storage.gdrive")
+
+SHOPPING_GDRIVE_FOLDER_ID = "1wa_FmqNmZJ3Md3noXxcWA7GGc6Lzp5Ty"
 
 
 async def _connect_postgres() -> asyncpg.Connection:
@@ -35,12 +40,29 @@ def _format_email(rows: list[asyncpg.Record]) -> str:
     return "\n".join(lines).rstrip()
 
 
+def _format_csv(rows: list[asyncpg.Record]) -> str:
+    columns = [
+        "item_id",
+        "item_name",
+        "item_description",
+        "item_priority",
+        "item_status",
+        "created_at",
+        "closed_at",
+    ]
+    output = StringIO(newline="")
+    writer = csv.writer(output)
+    writer.writerow(columns)
+    writer.writerows([row[column] for column in columns] for row in rows)
+    return output.getvalue()
+
+
 @log_script_execution("reminder.shopping")
-async def run() -> dict[str, str]:
+async def run() -> dict[str, object]:
     """Read all high-priority shopping items and email the formatted list."""
     connection = await _connect_postgres()
     try:
-        rows = await connection.fetch(
+        high_priority_rows = await connection.fetch(
             """
             SELECT item_name, item_description, item_status
             FROM toolsdata.shopping_list
@@ -48,11 +70,33 @@ async def run() -> dict[str, str]:
             ORDER BY created_at, item_id
             """
         )
+        all_rows = await connection.fetch(
+            """
+            SELECT
+                item_id,
+                item_name,
+                item_description,
+                item_priority,
+                item_status,
+                created_at,
+                closed_at
+            FROM toolsdata.shopping_list
+            ORDER BY created_at, item_id
+            """
+        )
     finally:
         await connection.close()
 
-    return await asyncio.to_thread(
+    email_result = await asyncio.to_thread(
         gmail.gmail_send_email,
         "PA Jarvis: High-priority shopping items",
-        _format_email(rows),
+        _format_email(high_priority_rows),
     )
+    upload_result = await asyncio.to_thread(
+        gdrive.upload_as_file_gdrive,
+        SHOPPING_GDRIVE_FOLDER_ID,
+        "csv",
+        _format_csv(all_rows),
+        "shopping_list.csv",
+    )
+    return {"email": email_result, "gdrive": upload_result}

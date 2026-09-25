@@ -84,6 +84,8 @@ services:
     environment:
       AK_GOOGLE_APPLICATION_CREDENTIALS: /app/ak-secrets/service-account.json
       AK_GDRIVE_ROOT_FOLDER: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
+      GOOGLE_APPLICATION_CREDENTIALS: /app/ak-secrets/service-account.json
+      GDRIVE_ROOT_FOLDER_ID: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
       STORAGE_SERVICE_URL: http://storage:8004
     volumes:
       - ./Tools/credentials/service-account.json:/app/ak-secrets/service-account.json:ro
@@ -99,3 +101,7 @@ services:
       - ./Storage/.env
     depends_on:
       - storage
+
+networks:
+  default:
+    name: pa-jarvis-dev

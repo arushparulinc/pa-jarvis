@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -37,10 +38,27 @@ async def dashboard(request: Request) -> HTMLResponse:
     tasks, shopping_items = await get_high_priority_items(
         request.app.state.postgres_pool
     )
+    completed_statuses = {"complete", "completed", "closed", "done", "purchased"}
+    open_task_count = sum(
+        str(task["task_status"]).strip().casefold() not in completed_statuses
+        for task in tasks
+    )
+    open_shopping_count = sum(
+        str(item["item_status"]).strip().casefold() not in completed_statuses
+        for item in shopping_items
+    )
+    now = datetime.now()
     context: dict[str, Any] = {
         "request": request,
         "tasks": tasks,
         "shopping_items": shopping_items,
+        "completed_statuses": completed_statuses,
+        "open_task_count": open_task_count,
+        "open_shopping_count": open_shopping_count,
+        "task_progress": min(len(tasks) * 14, 100),
+        "shopping_progress": min(len(shopping_items) * 14, 100),
+        "current_date": now.strftime("%A, %B %d"),
+        "generated_at": now.strftime("%I:%M %p"),
     }
     return templates.TemplateResponse(request, "dashboard.html", context)
 
