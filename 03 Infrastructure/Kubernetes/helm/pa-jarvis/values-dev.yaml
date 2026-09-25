@@ -15,48 +15,48 @@ frontend:
   njsEnv: " - DEV"
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-frontend
-    tag: sha-6b6054eaaab5959a6ce74c9c0b77f125f55a6e5f
+    tag: sha-26c64c8c5805cf81bf9a1a646ec5e7a54e48aa60
     pullPolicy: IfNotPresent
 
 backend:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-backend
-    tag: sha-6b6054eaaab5959a6ce74c9c0b77f125f55a6e5f
+    tag: sha-26c64c8c5805cf81bf9a1a646ec5e7a54e48aa60
     pullPolicy: IfNotPresent
 
 agents:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-agents
-    tag: sha-6b6054eaaab5959a6ce74c9c0b77f125f55a6e5f
+    tag: sha-26c64c8c5805cf81bf9a1a646ec5e7a54e48aa60
     pullPolicy: IfNotPresent
 
 llm:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-llm
-    tag: sha-6b6054eaaab5959a6ce74c9c0b77f125f55a6e5f
+    tag: sha-26c64c8c5805cf81bf9a1a646ec5e7a54e48aa60
     pullPolicy: IfNotPresent
 
 tools:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-tools
-    tag: sha-6b6054eaaab5959a6ce74c9c0b77f125f55a6e5f
+    tag: sha-26c64c8c5805cf81bf9a1a646ec5e7a54e48aa60
     pullPolicy: IfNotPresent
 
 storage:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-storage
-    tag: sha-6b6054eaaab5959a6ce74c9c0b77f125f55a6e5f
+    tag: sha-26c64c8c5805cf81bf9a1a646ec5e7a54e48aa60
     pullPolicy: IfNotPresent
 
 scripts:
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-scripts
-    tag: sha-6b6054eaaab5959a6ce74c9c0b77f125f55a6e5f
+    tag: sha-26c64c8c5805cf81bf9a1a646ec5e7a54e48aa60
     pullPolicy: IfNotPresent
 
 analytics:
   host: dashboard.arushparulinc.com
   image:
     repository: ghcr.io/arushparulinc/pa-jarvis-analytics
-    tag: sha-6b6054eaaab5959a6ce74c9c0b77f125f55a6e5f
+    tag: sha-26c64c8c5805cf81bf9a1a646ec5e7a54e48aa60
     pullPolicy: IfNotPresent
