@@ -40,7 +40,7 @@ Analytics connects directly to PostgreSQL using the Storage `.env` file; the Sto
 docker compose -f "05 Analytics/analytics_dashboard_fastpy/compose.analytics.yaml" up --build
 ```
 
-The dashboard is available at `http://localhost:8006` and the static UI prototype at `http://localhost:8006/static/dashboard_demo.html`.
+The dashboard is available at `http://localhost:8006`.
 
 ## Frontend only
 

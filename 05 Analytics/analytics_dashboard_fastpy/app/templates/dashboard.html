@@ -3,69 +3,60 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
     <title>PA Jarvis Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
   </head>
   <body>
-    <main class="page-shell">
-      <header class="hero">
-        <p class="eyebrow">PA Jarvis Analytics</p>
-        <h1>High-priority overview</h1>
-        <p class="summary">
-          {{ tasks|length }} task{{ '' if tasks|length == 1 else 's' }} and
-          {{ shopping_items|length }} shopping item{{ '' if shopping_items|length == 1 else 's' }}
-        </p>
+    <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="PA Jarvis dashboard home"><span class="brand-mark">J</span><span><strong>PA Jarvis</strong><small>Analytics</small></span></a>
+        <div class="topbar-actions"><span class="sync-status"><span class="status-dot"></span>Live data</span><a class="icon-button" href="/" aria-label="Refresh dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 1 0-2.3 5.7M20 4v7h-7"/></svg></a><div class="avatar">AK</div></div>
       </header>
 
-      <section class="dashboard-grid" aria-label="High-priority records">
-        <article class="panel">
-          <div class="panel-heading">
-            <h2>Tasks</h2>
-            <span class="count">{{ tasks|length }}</span>
+      <section class="hero">
+        <div><p class="kicker">{{ current_date }}</p><h1>High-priority overview.</h1><p class="hero-copy">Here’s what needs your attention right now.</p></div>
+        <div class="priority-summary"><span class="priority-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4m0 4h.01M10.3 3.8 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/></svg></span><span><strong>{{ tasks|length + shopping_items|length }}</strong><small>high-priority items</small></span></div>
+      </section>
+
+      <section class="metric-grid" aria-label="Dashboard summary">
+        <article class="metric-card"><span class="metric-label">Priority tasks</span><div class="metric-value"><strong>{{ tasks|length }}</strong><span class="trend neutral">{{ open_task_count }} open</span></div><div class="progress"><span style="width: {{ task_progress }}%"></span></div></article>
+        <article class="metric-card"><span class="metric-label">Shopping items</span><div class="metric-value"><strong>{{ shopping_items|length }}</strong><span class="trend neutral">{{ open_shopping_count }} open</span></div><div class="progress shopping-progress"><span style="width: {{ shopping_progress }}%"></span></div></article>
+        <article class="metric-card focus-card"><span class="metric-label">Next up</span><div class="next-item">{% if tasks %}<strong>{{ tasks[0].task_name }}</strong><span>{{ tasks[0].task_status }}</span>{% elif shopping_items %}<strong>{{ shopping_items[0].item_name }}</strong><span>{{ shopping_items[0].item_status }}</span>{% else %}<strong>Nothing urgent</strong><span>All clear</span>{% endif %}</div></article>
+      </section>
+
+      <section class="content-grid" aria-label="High-priority records">
+        <article class="list-panel">
+          <header class="panel-header"><div><span class="section-icon task-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 11 2 2 4-4M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span><span><h2>Priority tasks</h2><p>Important work to complete</p></span></div><span class="item-count">{{ tasks|length }} item{{ '' if tasks|length == 1 else 's' }}</span></header>
+          <div class="items">
+            {% for task in tasks %}
+              {% set complete = task.task_status|lower in completed_statuses %}
+              <article class="list-item{% if complete %} completed{% endif %}">
+                <span class="check{% if complete %} checked{% endif %}" aria-hidden="true">{% if complete %}<svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8"/></svg>{% endif %}</span>
+                <div class="item-body"><div class="item-title"><h3>{{ task.task_name }}</h3><span class="badge{% if complete %} complete{% endif %}">{{ task.task_status }}</span></div>{% if task.task_description %}<p>{{ task.task_description }}</p>{% endif %}<div class="meta"><span>High priority</span><span class="meta-dot"></span><time>Added {{ task.created_at.strftime('%b %d, %Y') }}</time></div></div>
+              </article>
+            {% else %}<p class="empty-state">No high-priority tasks.</p>{% endfor %}
           </div>
-          {% if tasks %}
-            <div class="records">
-              {% for task in tasks %}
-                <div class="record">
-                  <div>
-                    <h3>{{ task.task_name }}</h3>
-                    {% if task.task_description %}<p>{{ task.task_description }}</p>{% endif %}
-                  </div>
-                  <span class="status status-{{ task.task_status|lower|replace(' ', '-') }}">
-                    {{ task.task_status }}
-                  </span>
-                </div>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="empty-state">No high-priority tasks.</p>
-          {% endif %}
         </article>
 
-        <article class="panel">
-          <div class="panel-heading">
-            <h2>Shopping list</h2>
-            <span class="count">{{ shopping_items|length }}</span>
+        <article class="list-panel">
+          <header class="panel-header"><div><span class="section-icon shopping-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H6m4 12h.01M17 20h.01"/></svg></span><span><h2>Shopping list</h2><p>High-priority items to pick up</p></span></div><span class="item-count">{{ shopping_items|length }} item{{ '' if shopping_items|length == 1 else 's' }}</span></header>
+          <div class="items">
+            {% for item in shopping_items %}
+              {% set complete = item.item_status|lower in completed_statuses %}
+              <article class="list-item{% if complete %} completed{% endif %}">
+                <span class="check shopping-check{% if complete %} checked{% endif %}" aria-hidden="true">{% if complete %}<svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8"/></svg>{% endif %}</span>
+                <div class="item-body"><div class="item-title"><h3>{{ item.item_name }}</h3><span class="badge{% if complete %} complete{% endif %}">{{ item.item_status }}</span></div>{% if item.item_description %}<p>{{ item.item_description }}</p>{% endif %}<div class="meta"><span>High priority</span><span class="meta-dot"></span><time>Added {{ item.created_at.strftime('%b %d, %Y') }}</time></div></div>
+              </article>
+            {% else %}<p class="empty-state">No high-priority shopping items.</p>{% endfor %}
           </div>
-          {% if shopping_items %}
-            <div class="records">
-              {% for item in shopping_items %}
-                <div class="record">
-                  <div>
-                    <h3>{{ item.item_name }}</h3>
-                    {% if item.item_description %}<p>{{ item.item_description }}</p>{% endif %}
-                  </div>
-                  <span class="status status-{{ item.item_status|lower|replace(' ', '-') }}">
-                    {{ item.item_status }}
-                  </span>
-                </div>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="empty-state">No high-priority shopping items.</p>
-          {% endif %}
         </article>
       </section>
+      <footer><span><span class="status-dot"></span>Loaded {{ generated_at }}</span><span>PA Jarvis Dashboard</span></footer>
     </main>
   </body>
 </html>
