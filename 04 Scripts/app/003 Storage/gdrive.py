@@ -22,6 +22,11 @@ class GoogleDriveUploadError(RuntimeError):
     """Raised when generated content cannot be uploaded to Google Drive."""
 
 
+def _escape_query_value(value: str) -> str:
+    """Escape a string embedded in a Google Drive API query."""
+    return value.replace("\\", "\\\\").replace("'", "\\'")
+
+
 def _get_drive_service():
     client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
     client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "").strip()
@@ -65,7 +70,7 @@ def upload_as_file_gdrive(
     content: str | bytes,
     file_name: str = "",
 ) -> dict[str, object]:
-    """Upload content as a CSV, JSON, or text file to a Google Drive folder."""
+    """Create or replace a named CSV, JSON, or text file in Google Drive."""
     normalized_format = file_format.strip().casefold().lstrip(".")
     if normalized_format not in SUPPORTED_FILE_FORMATS:
         raise GoogleDriveUploadError(
@@ -94,12 +99,36 @@ def upload_as_file_gdrive(
     )
 
     try:
-        return _get_drive_service().files().create(
+        files = _get_drive_service().files()
+        matches = files.list(
+            q=(
+                f"'{_escape_query_value(destination_folder_id)}' in parents and "
+                f"name = '{_escape_query_value(resolved_file_name)}' and "
+                "trashed = false"
+            ),
+            fields="files(id,name,modifiedTime)",
+            orderBy="modifiedTime desc",
+            pageSize=100,
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True,
+        ).execute().get("files", [])
+
+        if matches:
+            result = files.update(
+                fileId=matches[0]["id"],
+                media_body=media,
+                fields="id,name,mimeType,parents,webViewLink",
+                supportsAllDrives=True,
+            ).execute()
+            return {**result, "operation": "updated"}
+
+        result = files.create(
             body={"name": resolved_file_name, "parents": [destination_folder_id]},
             media_body=media,
             fields="id,name,mimeType,parents,webViewLink",
             supportsAllDrives=True,
         ).execute()
+        return {**result, "operation": "created"}
     except HttpError as exc:
         raise GoogleDriveUploadError(
             f"Google Drive could not upload {resolved_file_name}: {exc}"

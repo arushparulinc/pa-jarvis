@@ -5,8 +5,8 @@ const API_URL = `${API_BASE_URL}/api/chat`;
 
 const quickPrompts = [
   "What can you help me with?",
-  "Summarize my recent activity",
-  "Help me plan my day",
+  "Show my shopping list",
+  "Show my to-do task list",
 ];
 
 const styles = {

@@ -1,62 +1,59 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark">
-    <title>PA Jarvis Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
-  </head>
-  <body>
-    <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
-    <main class="shell">
-      <header class="topbar">
-        <a class="brand" href="/" aria-label="PA Jarvis dashboard home"><span class="brand-mark">J</span><span><strong>PA Jarvis</strong><small>Analytics</small></span></a>
-        <div class="topbar-actions"><span class="sync-status"><span class="status-dot"></span>Live data</span><a class="icon-button" href="/" aria-label="Refresh dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 1 0-2.3 5.7M20 4v7h-7"/></svg></a><div class="avatar">AK</div></div>
-      </header>
-
-      <section class="hero">
-        <div><p class="kicker">{{ current_date }}</p><h1>High-priority overview.</h1><p class="hero-copy">Here’s what needs your attention right now.</p></div>
-        <div class="priority-summary"><span class="priority-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4m0 4h.01M10.3 3.8 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/></svg></span><span><strong>{{ tasks|length + shopping_items|length }}</strong><small>high-priority items</small></span></div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PA Jarvis · Priority dashboard</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17253b;background:#f5f7fb;font-synthesis:none}
+    *{box-sizing:border-box}body{margin:0}a{color:inherit}button{font:inherit}
+    .shell{max-width:1220px;margin:auto;padding:0 32px 48px}
+    .topbar{height:78px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e3e8f0}
+    .brand{display:flex;gap:12px;align-items:center;text-decoration:none;font-size:16px;font-weight:750;letter-spacing:-.03em}
+    .mark{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#243c78;color:#fff;font-weight:800;box-shadow:0 5px 12px #243c7826}
+    .brand small{display:block;color:#718095;font-size:11px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;margin-top:2px}
+    .top-actions{display:flex;align-items:center;gap:18px;color:#65758d;font-size:13px}.refresh{padding:9px 14px;border:1px solid #dce3ed;border-radius:9px;background:#fff;text-decoration:none;font-weight:650;color:#243c78}.refresh:hover{background:#eef2fa}.refresh:focus-visible{outline:3px solid #829bdb;outline-offset:2px}
+    .intro{display:flex;align-items:end;justify-content:space-between;gap:20px;padding:37px 0 27px}.eyebrow{margin:0 0 10px;color:#5970a8;font-weight:750;font-size:12px;letter-spacing:.12em;text-transform:uppercase}.intro h1{margin:0;font-size:clamp(31px,4vw,43px);line-height:1.13;letter-spacing:-.055em}.subtitle{color:#718095;font-size:15px;margin:10px 0 0}.date{color:#667790;font-size:13px;white-space:nowrap;padding-bottom:5px}
+    .boards{display:grid;grid-template-columns:1fr 1fr;align-items:start;gap:19px}.panel{background:white;border:1px solid #dce5f2;border-radius:17px;box-shadow:0 7px 25px #1e345508;overflow:hidden}.panel-header{padding:22px 24px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #dce5f2;background:#e0ebfb}.panel-title{display:flex;align-items:center;gap:12px;min-width:0}.icon{width:40px;height:40px;flex:none;border-radius:11px;display:grid;place-items:center;background:#d8e5fb;color:#274b93}.icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.icon.shop{background:#dcebf9;color:#26608a}.panel h2{font-size:22px;line-height:1.2;letter-spacing:-.025em;margin:0;color:#203d74}.panel-subtitle{color:#607494;font-size:12px;margin:4px 0 0}.count{font-size:12px;font-weight:700;white-space:nowrap;border-radius:999px;background:#fff;color:#315080;padding:6px 9px}
+    .items{padding:4px 24px 9px}.item{display:flex;gap:13px;padding:17px 0;border-bottom:1px solid #eef1f5;min-width:0}.item:last-child{border-bottom:0}.indicator{width:20px;height:20px;flex:none;margin-top:1px;border:2px solid #9bb0d4;border-radius:6px;display:grid;place-items:center;color:white;font-size:13px;font-weight:700}.shop-indicator{border-color:#8ebcae}.item.done .indicator{background:#528c77;border-color:#528c77}.item-main{min-width:0;flex:1}.item-heading{display:flex;justify-content:space-between;gap:12px;align-items:start}.item h3{font-size:14px;font-weight:690;line-height:1.45;margin:0;overflow-wrap:anywhere}.item.done h3{text-decoration:line-through;color:#91a0b1}.status{flex:none;color:#42628e;background:#edf3fa;border-radius:6px;padding:4px 7px;font-size:11px;font-weight:700;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.item.done .status{color:#31765a;background:#eaf5ee}.description{margin:6px 0 0;color:#748397;font-size:12px;line-height:1.5;overflow-wrap:anywhere;white-space:pre-line}.empty{padding:35px 5px;color:#75859a;text-align:center;font-size:14px}.footer{display:flex;justify-content:space-between;gap:12px;color:#8996a7;font-size:11px;padding-top:24px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34a483;margin-right:6px}
+    @media(max-width:800px){.boards{grid-template-columns:1fr}}
+    @media(max-width:600px){.shell{padding:0 17px 32px}.topbar{height:68px}.top-actions{gap:8px}.top-actions .updated{display:none}.intro{padding:31px 0 23px;display:block}.date{display:block;margin-top:15px}.panel-header{padding:19px 17px 16px}.items{padding:3px 17px 8px}.footer{flex-wrap:wrap}}
+  </style>
+</head>
+<body>
+  {% set task_count = tasks|length %}
+  {% set shopping_count = shopping_items|length %}
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="PA Jarvis dashboard home"><span class="mark" aria-hidden="true">J</span><span>PA Jarvis<small>Dashboard</small></span></a>
+      <div class="top-actions"><span class="updated"><span class="dot" aria-hidden="true"></span>Updated {{ generated_at }}</span><a class="refresh" href="/" aria-label="Refresh dashboard data">↻ &nbsp;Refresh</a></div>
+    </header>
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">Your daily overview</p><h1 id="page-title">What needs attention</h1><p class="subtitle">Your priority tasks and shopping items in one place.</p></div>
+      <span class="date">{{ current_date }}</span>
+    </section>
+    <section class="boards" aria-label="Priority lists">
+      <section class="panel" aria-labelledby="tasks-title">
+        <header class="panel-header"><div class="panel-title"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/></svg></span><div><h2 id="tasks-title">Priority tasks</h2><p class="panel-subtitle">Things to get done</p></div></div><span class="count">{{ task_count }} item{{ '' if task_count == 1 else 's' }}</span></header>
+        <div class="items">
+          {% for task in tasks %}
+            {% set done = task.task_status|default('', true)|lower in completed_statuses %}
+            <article class="item{% if done %} done{% endif %}"><span class="indicator" aria-hidden="true">{% if done %}✓{% endif %}</span><div class="item-main"><div class="item-heading"><h3>{{ task.task_name }}</h3><span class="status" title="{{ task.task_status }}">{{ task.task_status }}</span></div>{% if task.task_description %}<p class="description">{{ task.task_description }}</p>{% endif %}</div></article>
+          {% else %}<p class="empty">No priority tasks right now.</p>{% endfor %}
+        </div>
       </section>
-
-      <section class="metric-grid" aria-label="Dashboard summary">
-        <article class="metric-card"><span class="metric-label">Priority tasks</span><div class="metric-value"><strong>{{ tasks|length }}</strong><span class="trend neutral">{{ open_task_count }} open</span></div><div class="progress"><span style="width: {{ task_progress }}%"></span></div></article>
-        <article class="metric-card"><span class="metric-label">Shopping items</span><div class="metric-value"><strong>{{ shopping_items|length }}</strong><span class="trend neutral">{{ open_shopping_count }} open</span></div><div class="progress shopping-progress"><span style="width: {{ shopping_progress }}%"></span></div></article>
-        <article class="metric-card focus-card"><span class="metric-label">Next up</span><div class="next-item">{% if tasks %}<strong>{{ tasks[0].task_name }}</strong><span>{{ tasks[0].task_status }}</span>{% elif shopping_items %}<strong>{{ shopping_items[0].item_name }}</strong><span>{{ shopping_items[0].item_status }}</span>{% else %}<strong>Nothing urgent</strong><span>All clear</span>{% endif %}</div></article>
+      <section class="panel" aria-labelledby="shopping-title">
+        <header class="panel-header"><div class="panel-title"><span class="icon shop" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9h18l-2 11H5L3 9Z"/><path d="m8 9 4-6 4 6M9 13v3m6-3v3"/></svg></span><div><h2 id="shopping-title">Shopping list</h2><p class="panel-subtitle">Things to pick up</p></div></div><span class="count">{{ shopping_count }} item{{ '' if shopping_count == 1 else 's' }}</span></header>
+        <div class="items">
+          {% for item in shopping_items %}
+            {% set done = item.item_status|default('', true)|lower in completed_statuses %}
+            <article class="item{% if done %} done{% endif %}"><span class="indicator shop-indicator" aria-hidden="true">{% if done %}✓{% endif %}</span><div class="item-main"><div class="item-heading"><h3>{{ item.item_name }}</h3><span class="status" title="{{ item.item_status }}">{{ item.item_status }}</span></div>{% if item.item_description %}<p class="description">{{ item.item_description }}</p>{% endif %}</div></article>
+          {% else %}<p class="empty">No priority shopping items right now.</p>{% endfor %}
+        </div>
       </section>
-
-      <section class="content-grid" aria-label="High-priority records">
-        <article class="list-panel">
-          <header class="panel-header"><div><span class="section-icon task-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 11 2 2 4-4M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span><span><h2>Priority tasks</h2><p>Important work to complete</p></span></div><span class="item-count">{{ tasks|length }} item{{ '' if tasks|length == 1 else 's' }}</span></header>
-          <div class="items">
-            {% for task in tasks %}
-              {% set complete = task.task_status|lower in completed_statuses %}
-              <article class="list-item{% if complete %} completed{% endif %}">
-                <span class="check{% if complete %} checked{% endif %}" aria-hidden="true">{% if complete %}<svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8"/></svg>{% endif %}</span>
-                <div class="item-body"><div class="item-title"><h3>{{ task.task_name }}</h3><span class="badge{% if complete %} complete{% endif %}">{{ task.task_status }}</span></div>{% if task.task_description %}<p>{{ task.task_description }}</p>{% endif %}<div class="meta"><span>High priority</span><span class="meta-dot"></span><time>Added {{ task.created_at.strftime('%b %d, %Y') }}</time></div></div>
-              </article>
-            {% else %}<p class="empty-state">No high-priority tasks.</p>{% endfor %}
-          </div>
-        </article>
-
-        <article class="list-panel">
-          <header class="panel-header"><div><span class="section-icon shopping-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H6m4 12h.01M17 20h.01"/></svg></span><span><h2>Shopping list</h2><p>High-priority items to pick up</p></span></div><span class="item-count">{{ shopping_items|length }} item{{ '' if shopping_items|length == 1 else 's' }}</span></header>
-          <div class="items">
-            {% for item in shopping_items %}
-              {% set complete = item.item_status|lower in completed_statuses %}
-              <article class="list-item{% if complete %} completed{% endif %}">
-                <span class="check shopping-check{% if complete %} checked{% endif %}" aria-hidden="true">{% if complete %}<svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8"/></svg>{% endif %}</span>
-                <div class="item-body"><div class="item-title"><h3>{{ item.item_name }}</h3><span class="badge{% if complete %} complete{% endif %}">{{ item.item_status }}</span></div>{% if item.item_description %}<p>{{ item.item_description }}</p>{% endif %}<div class="meta"><span>High priority</span><span class="meta-dot"></span><time>Added {{ item.created_at.strftime('%b %d, %Y') }}</time></div></div>
-              </article>
-            {% else %}<p class="empty-state">No high-priority shopping items.</p>{% endfor %}
-          </div>
-        </article>
-      </section>
-      <footer><span><span class="status-dot"></span>Loaded {{ generated_at }}</span><span>PA Jarvis Dashboard</span></footer>
-    </main>
-  </body>
+    </section>
+    <footer class="footer"><span>Showing high-priority records</span><span>Refresh to see changes made by PA Jarvis</span></footer>
+  </main>
+</body>
 </html>
