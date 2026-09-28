@@ -30,9 +30,7 @@ async def get_high_priority_items(
                 task_name,
                 task_description,
                 task_priority,
-                task_status,
-                created_at,
-                closed_at
+                task_status
             FROM toolsdata.task_list
             WHERE LOWER(TRIM(task_priority)) = 'high'
             ORDER BY
@@ -47,9 +45,7 @@ async def get_high_priority_items(
                 item_name,
                 item_description,
                 item_priority,
-                item_status,
-                created_at,
-                closed_at
+                item_status
             FROM toolsdata.shopping_list
             WHERE LOWER(TRIM(item_priority)) = 'high'
             ORDER BY
