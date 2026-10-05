@@ -64,7 +64,7 @@ def _closest_item(rows: list[asyncpg.Record], item_name: str, *, mutation: bool 
 async def add_item(
     item_name: str,
     item_description: str = "",
-    item_priority: str = "",
+    item_priority: str = "High",
 ) -> dict[str, object]:
     """Add an item to the PostgreSQL shopping list."""
     connection = await _connect_postgres()
@@ -88,7 +88,7 @@ async def add_item(
             """,
             item_name,
             item_description or None,
-            item_priority or None,
+            item_priority or "High",
         )
         return _item_record(row)
     except asyncpg.UniqueViolationError as exc:

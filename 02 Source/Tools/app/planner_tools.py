@@ -240,7 +240,7 @@ def _closest_task(rows: list[asyncpg.Record], task_name: str, *, mutation: bool 
 async def add_task(
     task_name: str,
     task_description: str = "",
-    task_priority: str = "Not-Defined",
+    task_priority: str = "High",
     task_status: str = "Open",
 ) -> dict[str, object]:
     """Add a task to the PostgreSQL task list."""
@@ -254,7 +254,7 @@ async def add_task(
             """,
             task_name,
             task_description or None,
-            task_priority or "Not-Defined",
+            task_priority or "High",
             task_status or "Open",
         )
         return _task_record(row)

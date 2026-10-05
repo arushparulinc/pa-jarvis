@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PA Jarvis · TV</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; }
+    body { margin: 0; background: #0c1729; color: #f4f7fc; }
+    .screen { height: 100vh; height: 100dvh; padding: clamp(16px, 2vw, 40px); display: flex; flex-direction: column; gap: 22px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 16px; }
+    .mark { background: #3c78ed; border-radius: 16px; width: 56px; height: 56px; display: grid; place-items: center; font-size: 32px; font-weight: 700; }
+    h1 { margin: 0; font-size: clamp(24px, 2vw, 38px); letter-spacing: -.6px; }
+    .subtitle { color: #9aacc7; margin: 6px 0 0; font-size: 16px; }
+    .clock { text-align: right; }
+    #time { font-size: clamp(28px, 2.7vw, 48px); font-weight: 700; font-variant-numeric: tabular-nums; }
+    #date { color: #a9b9d1; font-size: 18px; margin-top: 4px; }
+    .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; }
+    .card { overflow: hidden; border-radius: 22px; border: 1px solid #2c405e; background: #16253c; }
+    .dashboard { display: flex; flex-direction: column; }
+    .heading { padding: 18px 24px; background: #244b7b; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    h2 { margin: 0; font-size: clamp(20px, 1.6vw, 28px); }
+    .label { font-size: 13px; color: #d2e4ff; letter-spacing: 1px; text-transform: uppercase; }
+    iframe { width: 100%; flex: 1; min-height: 0; border: 0; background: #f6f8fc; color-scheme: light; }
+    .side { min-height: 0; display: grid; grid-template-rows: minmax(0, .85fr) minmax(0, 1.15fr); gap: 24px; }
+    .message { padding: clamp(20px, 2vw, 36px); overflow: auto; }
+    .eyebrow { margin: 0 0 20px; color: #87b5ff; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+    .message h2 { font-size: clamp(26px, 2.1vw, 40px); line-height: 1.15; }
+    .message p.copy { color: #c2cfe2; font-size: clamp(18px, 1.35vw, 26px); line-height: 1.5; margin: 20px 0 0; }
+    .image-card { display: flex; flex-direction: column; }
+    .image-card svg { display: block; width: 100%; flex: 1; min-height: 0; background: #aecbdc; }
+    .caption { padding: 18px 24px; }
+    .caption h2 { font-size: 22px; }
+    .caption p { margin: 8px 0 0; color: #a9b9d1; font-size: 16px; }
+    footer { color: #91a6c4; font-size: 14px; display: flex; justify-content: space-between; gap: 12px; }
+    @media (max-width: 900px) { .screen { height: auto; min-height: 100vh; } .grid { grid-template-columns: 1fr; } .dashboard { height: 75vh; } .side { grid-template-rows: auto auto; } .image-card svg { flex: none; height: 280px; } }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <header class="topbar">
+      <div class="brand"><span class="mark" aria-hidden="true">J</span><div><h1>PA Jarvis</h1><p class="subtitle">Your home at a glance</p></div></div>
+      <div class="clock"><div id="time"></div><div id="date"></div></div>
+    </header>
+    <div class="grid">
+      <section class="card dashboard" aria-labelledby="dashboard-heading">
+        <header class="heading"><h2 id="dashboard-heading">Tasks &amp; shopping</h2><span class="label">Dashboard</span></header>
+        <!-- Load the rendered dashboard route, rather than the Jinja template file. -->
+        <iframe id="dashboard-frame" src="/" title="PA Jarvis tasks and shopping dashboard"></iframe>
+      </section>
+      <aside class="side" aria-label="Text and image panels">
+        <section class="card message" aria-labelledby="message-heading">
+          <p class="eyebrow">Sample text</p>
+          <!-- Replace this heading and paragraph with sourced content later. -->
+          <h2 id="message-heading">A little progress,<br>every day.</h2>
+          <p class="copy">Choose one thing that matters today. Give it your attention, and make room for something you enjoy.</p>
+        </section>
+        <section class="card image-card" aria-labelledby="image-heading">
+          <!-- Self-contained sample illustration. Replace this SVG with an img element later. -->
+          <svg viewBox="0 0 800 460" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMid slice">
+            <title id="landscape-title">Sample illustration of mountains reflected in a lake at sunrise</title>
+            <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a9cddd"/><stop offset="1" stop-color="#f4dfbe"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#769fae"/><stop offset="1" stop-color="#254957"/></linearGradient></defs>
+            <rect width="800" height="460" fill="url(#sky)"/>
+            <circle cx="615" cy="108" r="48" fill="#fff0cb"/>
+            <path d="M0 278 145 85 286 253 404 110 556 265 682 155 800 283V340H0Z" fill="#7896a5"/>
+            <path d="m103 142 42-57 57 68-51-24-22 27Z M363 165l41-55 45 55-42-21Z" fill="#edf3ed"/>
+            <path d="M0 290 105 204 223 290 335 188 470 294 597 223 800 301V349H0Z" fill="#395b6c"/>
+            <rect y="310" width="800" height="150" fill="url(#water)"/>
+            <path d="m0 316 105 81 118-80 112 107 135-109 127 70 203-66" fill="none" stroke="#afc3c1" stroke-width="2" opacity=".25"/>
+            <path d="M530 345h173M140 370h135M385 401h215M61 427h260" stroke="#d3ddd2" stroke-width="3" opacity=".35"/>
+            <path d="M0 460V295l21-48 20 48H29v33l29-62 27 62H68v45l32-70 33 70h-21v87Z" fill="#1a3b43"/>
+          </svg>
+          <div class="caption"><h2 id="image-heading">A moment of calm</h2><p>Sample image · replace with your own source later</p></div>
+        </section>
+      </aside>
+    </div>
+    <footer><span>PA Jarvis · TV view</span><span>Dashboard reloads every 60 seconds</span></footer>
+  </main>
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('time').textContent = now.toLocaleTimeString('en-CA', {timeZone: 'America/Toronto', hour: 'numeric', minute: '2-digit'});
+      document.getElementById('date').textContent = now.toLocaleDateString('en-CA', {timeZone: 'America/Toronto', weekday: 'long', month: 'long', day: 'numeric'});
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+    // Re-request the existing server-rendered dashboard, including fresh database data.
+    setInterval(() => { document.getElementById('dashboard-frame').src = '/?tv_refresh=' + Date.now(); }, 60000);
+  </script>
+</body>
+</html>
