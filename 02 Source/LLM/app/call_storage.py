@@ -8,7 +8,7 @@ DEFAULT_STORAGE_SERVICE_URL = "http://127.0.0.1:8004"
 DEFAULT_TIMEOUT_SECONDS = 30.0
 
 
-async def log_event_pgsql(
+async def log_service_event_pgsql(
     request_id: str,
     chat_message: str,
     service_name: str,
@@ -36,7 +36,7 @@ async def log_event_pgsql(
         async with httpx.AsyncClient(timeout=DEFAULT_TIMEOUT_SECONDS) as client:
             response = await client.post(f"{base_url}/log-service-event", json=payload)
         return response.is_success
-    except httpx.RequestError:
+    except Exception:
         return False
 
 
@@ -65,5 +65,6 @@ async def log_llm_call_pgsql(
                 json=payload,
             )
         return response.is_success
-    except httpx.RequestError:
+    # Logging is best-effort and must never replace the LLM result or error.
+    except Exception:
         return False

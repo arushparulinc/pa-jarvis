@@ -2,7 +2,7 @@ import os
 
 import httpx
 
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 DEFAULT_LLM_SERVICE_URL = "http://127.0.0.1:8002"
@@ -34,7 +34,7 @@ async def invoke_llm(
             if shared_history
             else ""
         )
-        await log_event_pgsql(
+        await log_service_event_pgsql(
             request_id=request_id,
             chat_message=message,
             service_name="agents",

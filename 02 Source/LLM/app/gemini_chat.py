@@ -1,11 +1,10 @@
-import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from google.genai import types
 
 from . import gemini_client, system_instructions, tools_registry
-from .call_storage import log_event_pgsql, log_llm_call_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 LLM_TIME_ZONE = ZoneInfo("America/Toronto")
@@ -22,6 +21,30 @@ def _append_current_date_time(system_instruction: str) -> str:
         f"Today is: {current:%A}"
     )
     return f"{system_instruction.rstrip()}\n\n{useful_info}"
+
+
+def _parse_response_parts(
+    response: types.GenerateContentResponse,
+) -> tuple[str, list[dict[str, object]]]:
+    """Extract text and function calls without using the text-only accessor."""
+    candidates = response.candidates or []
+    if not candidates or candidates[0].content is None:
+        return "", []
+
+    text_parts: list[str] = []
+    tool_calls: list[dict[str, object]] = []
+    for part in candidates[0].content.parts or []:
+        if part.text:
+            text_parts.append(part.text)
+        if part.function_call:
+            tool_calls.append(
+                {
+                    "name": part.function_call.name or "",
+                    "arguments": part.function_call.args or {},
+                }
+            )
+
+    return "".join(text_parts).strip(), tool_calls
 
 
 async def route_chat_message_gemini(
@@ -112,7 +135,7 @@ async def route_chat_message_gemini(
         if shared_history
         else ""
     )
-    await log_event_pgsql(
+    await log_service_event_pgsql(
         request_id=request_id,
         chat_message=chat_message,
         service_name="llm",
@@ -122,33 +145,10 @@ async def route_chat_message_gemini(
     )
     response = await gemini_client.generate_response(
         request_id=request_id,
+        calling_agent=calling_agent,
         contents=gemini_history,
         system_instruction=system_instruction,
         tools=gemini_tools,
         chat_history=shared_history,
     )
-    await log_llm_call_pgsql(
-        request_id=request_id,
-        calling_agent_name=calling_agent,
-        message_sent=json.dumps(
-            {
-                "chat_history": shared_history,
-                "system_instructions": system_instruction,
-                "tools": [
-                    tool.model_dump(mode="json", exclude_none=True)
-                    for tool in gemini_tools
-                ],
-            },
-            default=str,
-        ),
-        message_response=response.model_dump_json(exclude_none=True),
-    )
-    reply = response.text.strip() if response.text else ""
-    tool_calls = [
-        {
-            "name": function_call.name or "",
-            "arguments": function_call.args or {},
-        }
-        for function_call in (response.function_calls or [])
-    ]
-    return reply, tool_calls
+    return _parse_response_parts(response)

@@ -63,6 +63,15 @@ async def dashboard(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "dashboard.html", context)
 
 
+@app.get("/tv", response_class=HTMLResponse)
+async def tv_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="tv.html",
+        context={},
+    )
+
+
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "healthy", "service": "analytics-service"}

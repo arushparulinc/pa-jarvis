@@ -18,7 +18,7 @@ from . import (
     system_instructions,
     tools_registry,
 )
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 app = FastAPI(
@@ -78,7 +78,7 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
             if request.shared_history
             else ""
         )
-        await log_event_pgsql(
+        await log_service_event_pgsql(
             request_id=str(request.request_id),
             chat_message=message,
             service_name="llm",

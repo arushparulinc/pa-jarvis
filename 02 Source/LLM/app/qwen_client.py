@@ -1,3 +1,4 @@
+import json
 import os
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -10,7 +11,7 @@ from ollama import (
     Tool,
 )
 
-from .call_storage import log_event_pgsql
+from .call_storage import log_llm_call_pgsql, log_service_event_pgsql
 
 
 # Ollama's official Qwen3 8B model tag. Override these values in the environment
@@ -61,6 +62,7 @@ async def check_ollama_health() -> None:
 
 async def generate_response(
     request_id: str,
+    calling_agent: str,
     messages: Sequence[Mapping[str, Any]],
     system_instruction: str,
     tools: Sequence[Mapping[str, Any] | Tool] | None = None,
@@ -84,22 +86,30 @@ async def generate_response(
             }
         )
     request_messages.extend(messages)
+    shared_history = chat_history or []
+    chat_message = (
+        str(shared_history[-1].get("content", ""))
+        if shared_history
+        else ""
+    )
+    message_sent = json.dumps(
+        {
+            "host": host,
+            "model": model,
+            "messages": request_messages,
+            "tools": tools,
+            "stream": False,
+            "think": False,
+            "keep_alive": "10m",
+            "options": {
+                "temperature": 0.5,
+                "num_predict": 256,
+            },
+        },
+        default=str,
+    )
 
     try:
-        shared_history = chat_history or []
-        chat_message = (
-            str(shared_history[-1].get("content", ""))
-            if shared_history
-            else ""
-        )
-        await log_event_pgsql(
-            request_id=request_id,
-            chat_message=chat_message,
-            service_name="llm",
-            script_name="qwen_client.py",
-            event_type="call_qwen_api",
-            chat_history=shared_history,
-        )
         response = await AsyncClient(host=host, timeout=timeout_seconds).chat(
             model=model,
             messages=request_messages,
@@ -112,16 +122,59 @@ async def generate_response(
                 "num_predict": 256,
             },
         )
+        await log_llm_call_pgsql(
+            request_id=request_id,
+            calling_agent_name=calling_agent,
+            message_sent=message_sent,
+            message_response=response.model_dump_json(exclude_none=True),
+        )
     except ResponseError as exc:
+        await log_llm_call_pgsql(
+            request_id=request_id,
+            calling_agent_name=calling_agent,
+            message_sent=message_sent,
+            message_response=json.dumps(
+                {
+                    "success": False,
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc),
+                    "status_code": exc.status_code,
+                }
+            ),
+        )
         raise QwenAPIError(
             message=str(exc),
             status_code=exc.status_code,
         ) from exc
     except RequestError as exc:
+        await log_llm_call_pgsql(
+            request_id=request_id,
+            calling_agent_name=calling_agent,
+            message_sent=message_sent,
+            message_response=json.dumps(
+                {
+                    "success": False,
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc),
+                }
+            ),
+        )
         raise QwenConnectionError(
             f"Could not send the request to Ollama at {host}: {exc}"
         ) from exc
     except Exception as exc:
+        await log_llm_call_pgsql(
+            request_id=request_id,
+            calling_agent_name=calling_agent,
+            message_sent=message_sent,
+            message_response=json.dumps(
+                {
+                    "success": False,
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc),
+                }
+            ),
+        )
         raise QwenError(
             f"Qwen request failed: {type(exc).__name__}: {exc}"
         ) from exc
@@ -129,4 +182,19 @@ async def generate_response(
     if not isinstance(response, ChatResponse):
         raise QwenError("Ollama returned an unexpected streaming response.")
 
+    logged_history = [
+        *shared_history,
+        {
+            "role": "assistant",
+            "content": response.model_dump(mode="json", exclude_none=True),
+        },
+    ]
+    await log_service_event_pgsql(
+        request_id=request_id,
+        chat_message=chat_message,
+        service_name="llm",
+        script_name="qwen_client.py",
+        event_type="call_qwen_api",
+        chat_history=logged_history,
+    )
     return response
