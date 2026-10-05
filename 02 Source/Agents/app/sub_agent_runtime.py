@@ -19,9 +19,9 @@ async def run_sub_agent(
     chat_history: list[dict[str, object]] = [
         {"role": "user", "content": agent_instructions}
     ]
-    provider = "qwen"
+    provider = "gemini"
     provider_tool_round = 0
-    qwen_error: Exception | None = None
+    gemini_error: Exception | None = None
 
     while True:
         try:
@@ -97,14 +97,14 @@ async def run_sub_agent(
                 )
 
         except call_llm.LLMServiceError as llm_error:
-            if provider == "qwen":
-                qwen_error = llm_error
-                provider = "gemini"
+            if provider == "gemini":
+                gemini_error = llm_error
+                provider = "qwen"
                 provider_tool_round = 0
                 continue
 
             raise SubAgentError(
                 f"{calling_agent} could not generate a response. "
-                f"Primary provider error: {qwen_error}. "
+                f"Primary provider error: {gemini_error}. "
                 f"Fallback provider error: {llm_error}"
             ) from llm_error
