@@ -56,7 +56,7 @@ def _append_chat_history(message: dict[str, object]) -> None:
 
 
 async def route_chat_message(request_id: str, message: str) -> str:
-    """Manage tool rounds through Qwen first, then fall back to Gemini."""
+    """Manage tool rounds through Gemini first, then fall back to Qwen."""
     # Serialize complete turns so every provider sees a consistent shared
     # history while it is being updated by LLM and tool responses.
     async with chat_history_lock:
@@ -65,9 +65,9 @@ async def route_chat_message(request_id: str, message: str) -> str:
         previous_history = list(chat_history)
         _append_chat_history({"role": "user", "content": message})
 
-        provider = "qwen"
+        provider = "gemini"
         provider_tool_round = 0
-        qwen_error: Exception | None = None
+        gemini_error: Exception | None = None
 
         while True:
             try:
@@ -193,10 +193,10 @@ async def route_chat_message(request_id: str, message: str) -> str:
                     )
 
             except call_llm.LLMServiceError as llm_error:
-                if provider == "qwen":
-                    # Preserve context and retry through the Gemini provider.
-                    qwen_error = llm_error
-                    provider = "gemini"
+                if provider == "gemini":
+                    # Preserve context and retry through the Qwen provider.
+                    gemini_error = llm_error
+                    provider = "qwen"
                     provider_tool_round = 0
                     continue
 
@@ -205,7 +205,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                 chat_history[:] = previous_history
                 raise ChatError(
                     "No chat provider could generate a response. "
-                    f"Primary provider error: {qwen_error}. "
+                    f"Primary provider error: {gemini_error}. "
                     f"Fallback provider error: {llm_error}"
                 ) from llm_error
 

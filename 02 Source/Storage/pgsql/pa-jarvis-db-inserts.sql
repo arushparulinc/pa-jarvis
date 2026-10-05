@@ -138,7 +138,7 @@ INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_descr
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(604, 'event_name', 'string', 'Name of calendar event to delete', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(605, 'task_name', 'string', 'Name of To-Do task to add', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(605, 'task_description', 'string', 'Description of To-Do task to add', false);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(605, 'task_priority', 'string', 'Priority of To-Do task', true);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(605, 'task_priority', 'string', 'Priority of To-Do task; defaults to High', false);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(606, 'task_name', 'string', 'Name of To-Do task to find', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(608, 'task_name', 'string', 'Name of To-Do task to delete', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(609, 'task_name', 'string', 'Name of To-Do task to update', true);
@@ -147,7 +147,7 @@ INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_descr
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(609, 'closed_at', 'string', 'ISO 8601 date-time when the task was closed', false);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(701, 'item_name', 'string', 'Name of item to add to shopping list', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(701, 'item_description', 'string', 'Description of item to add to shopping list', false);
-INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(701, 'item_priority', 'string', 'Priority of item to add to shopping list', false);
+INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(701, 'item_priority', 'string', 'Priority of item to add to shopping list; defaults to High', false);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(702, 'item_name', 'string', 'Name of item to find in shopping list', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(704, 'item_name', 'string', 'Name of item to delete from shopping list', true);
 INSERT INTO config.tools_parameters(tool_id, param_name, param_type, param_description, is_required) VALUES(705, 'item_name', 'string', 'Name of shopping item to update', true);
