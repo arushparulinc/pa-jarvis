@@ -24,6 +24,30 @@ def _append_current_date_time(system_instruction: str) -> str:
     return f"{system_instruction.rstrip()}\n\n{useful_info}"
 
 
+def _parse_response_parts(
+    response: types.GenerateContentResponse,
+) -> tuple[str, list[dict[str, object]]]:
+    """Extract text and function calls without using the text-only accessor."""
+    candidates = response.candidates or []
+    if not candidates or candidates[0].content is None:
+        return "", []
+
+    text_parts: list[str] = []
+    tool_calls: list[dict[str, object]] = []
+    for part in candidates[0].content.parts or []:
+        if part.text:
+            text_parts.append(part.text)
+        if part.function_call:
+            tool_calls.append(
+                {
+                    "name": part.function_call.name or "",
+                    "arguments": part.function_call.args or {},
+                }
+            )
+
+    return "".join(text_parts).strip(), tool_calls
+
+
 async def route_chat_message_gemini(
     request_id: str,
     shared_history: list[dict[str, object]],
@@ -143,12 +167,4 @@ async def route_chat_message_gemini(
         ),
         message_response=response.model_dump_json(exclude_none=True),
     )
-    reply = response.text.strip() if response.text else ""
-    tool_calls = [
-        {
-            "name": function_call.name or "",
-            "arguments": function_call.args or {},
-        }
-        for function_call in (response.function_calls or [])
-    ]
-    return reply, tool_calls
+    return _parse_response_parts(response)
