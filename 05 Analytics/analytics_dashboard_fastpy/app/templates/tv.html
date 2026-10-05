@@ -1,65 +1,12 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PA Jarvis · TV</title>
-  <style>
-    * { box-sizing: border-box; }
-    :root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; }
-    body { margin: 0; background: #0c1729; color: #f4f7fc; }
-    .screen { height: 100vh; height: 100dvh; padding: clamp(16px, 2vw, 40px); display: flex; flex-direction: column; gap: 22px; }
-    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-    .brand { display: flex; align-items: center; gap: 16px; }
-    .mark { background: #3c78ed; border-radius: 16px; width: 56px; height: 56px; display: grid; place-items: center; font-size: 32px; font-weight: 700; }
-    h1 { margin: 0; font-size: clamp(24px, 2vw, 38px); letter-spacing: -.6px; }
-    .subtitle { color: #9aacc7; margin: 6px 0 0; font-size: 16px; }
-    .clock { text-align: right; }
-    #time { font-size: clamp(28px, 2.7vw, 48px); font-weight: 700; font-variant-numeric: tabular-nums; }
-    #date { color: #a9b9d1; font-size: 18px; margin-top: 4px; }
-    .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; }
-    .card { overflow: hidden; border-radius: 22px; border: 1px solid #2c405e; background: #16253c; }
-    .dashboard { display: flex; flex-direction: column; }
-    .heading { padding: 18px 24px; background: #244b7b; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    h2 { margin: 0; font-size: clamp(20px, 1.6vw, 28px); }
-    .label { font-size: 13px; color: #d2e4ff; letter-spacing: 1px; text-transform: uppercase; }
-    iframe { width: 100%; flex: 1; min-height: 0; border: 0; background: #f6f8fc; color-scheme: light; }
-    .side { min-height: 0; display: grid; grid-template-rows: minmax(0, .85fr) minmax(0, 1.15fr); gap: 24px; }
-    .message { padding: clamp(20px, 2vw, 36px); overflow: auto; }
-    .eyebrow { margin: 0 0 20px; color: #87b5ff; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
-    .message h2 { font-size: clamp(26px, 2.1vw, 40px); line-height: 1.15; }
-    .message p.copy { color: #c2cfe2; font-size: clamp(18px, 1.35vw, 26px); line-height: 1.5; margin: 20px 0 0; }
-    .image-card { display: flex; flex-direction: column; }
-    .image-card svg { display: block; width: 100%; flex: 1; min-height: 0; background: #aecbdc; }
-    .caption { padding: 18px 24px; }
-    .caption h2 { font-size: 22px; }
-    .caption p { margin: 8px 0 0; color: #a9b9d1; font-size: 16px; }
-    footer { color: #91a6c4; font-size: 14px; display: flex; justify-content: space-between; gap: 12px; }
-    @media (max-width: 900px) { .screen { height: auto; min-height: 100vh; } .grid { grid-template-columns: 1fr; } .dashboard { height: 75vh; } .side { grid-template-rows: auto auto; } .image-card svg { flex: none; height: 280px; } }
-  </style>
-</head>
-<body>
-  <main class="screen">
-    <header class="topbar">
-      <div class="brand"><span class="mark" aria-hidden="true">J</span><div><h1>PA Jarvis</h1><p class="subtitle">Your home at a glance</p></div></div>
-      <div class="clock"><div id="time"></div><div id="date"></div></div>
-    </header>
-    <div class="grid">
-      <section class="card dashboard" aria-labelledby="dashboard-heading">
-        <header class="heading"><h2 id="dashboard-heading">Tasks &amp; shopping</h2><span class="label">Dashboard</span></header>
-        <!-- Load the rendered dashboard route, rather than the Jinja template file. -->
-        <iframe id="dashboard-frame" src="/" title="PA Jarvis tasks and shopping dashboard"></iframe>
-      </section>
-      <aside class="side" aria-label="Text and image panels">
-        <section class="card message" aria-labelledby="message-heading">
-          <p class="eyebrow">Sample text</p>
-          <!-- Replace this heading and paragraph with sourced content later. -->
-          <h2 id="message-heading">A little progress,<br>every day.</h2>
-          <p class="copy">Choose one thing that matters today. Give it your attention, and make room for something you enjoy.</p>
-        </section>
-        <section class="card image-card" aria-labelledby="image-heading">
-          <!-- Self-contained sample illustration. Replace this SVG with an img element later. -->
-          <svg viewBox="0 0 800 460" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMid slice">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PA Jarvis · Portrait TV</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0c1729;color:#f4f7fc;font-family:Arial,Helvetica,sans-serif}.screen{height:100vh;height:100dvh;padding:24px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:18px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px}h1{font-size:30px;margin:0}.brand small{display:block;margin-top:6px;color:#9aacc7;font-size:16px}.clock{text-align:right}#time{font-size:34px;font-weight:bold}#date{font-size:16px;color:#acbdd4;margin-top:6px}.layout{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr) minmax(0,2fr);gap:18px}.card{border:1px solid #2c405e;border-radius:20px;overflow:hidden;background:#16253c}.message{padding:30px;display:flex;flex-direction:column;justify-content:center}.eyebrow{color:#87b5ff;font-size:15px;letter-spacing:2px;text-transform:uppercase;margin:0 0 16px}.message h2{font-size:clamp(28px,3.7vw,44px);line-height:1.15;margin:0}.copy{font-size:clamp(20px,2.3vw,28px);line-height:1.45;color:#c2cfe2;margin:18px 0 0}.image-card{position:relative}.image-card svg{width:100%;height:100%;display:block;object-fit:cover}.caption{position:absolute;bottom:0;left:0;right:0;padding:22px;background:linear-gradient(transparent,rgba(8,24,35,.88));padding-top:50px}.caption h2{font-size:26px;margin:0}.caption p{font-size:15px;margin:8px 0 0;color:#d1deeb}.lists{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;min-height:0}.list{display:flex;flex-direction:column;background:#f5f8fd;color:#192c46;min-height:0}.list-header{background:#dceafe;padding:22px 18px;display:flex;align-items:center;justify-content:space-between;gap:8px}.list-header h2{font-size:clamp(20px,2.5vw,28px);margin:0;color:#23467d}.count{background:white;border-radius:20px;padding:6px 10px;white-space:nowrap;font-size:14px}.items{flex:1;min-height:0;overflow:hidden;padding:0 18px}.item{padding:20px 0;border-bottom:1px solid #dce4ef;overflow-wrap:anywhere}.item:last-child{border-bottom:0}.item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.item h3{font-size:clamp(18px,2.2vw,25px);line-height:1.25;margin:0}.status{font-size:12px;background:#e6eefb;color:#355d8d;border-radius:7px;padding:5px 7px}.item p{font-size:clamp(16px,1.8vw,20px);line-height:1.4;color:#687b94;margin:10px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.page{padding:12px 18px;color:#6c809a;font-size:13px;min-height:40px;border-top:1px solid #dce4ef}footer{font-size:13px;color:#91a6c4;display:flex;justify-content:space-between;gap:12px}#source{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0} @media(max-height:800px){.screen{padding:12px;gap:10px}.layout,.lists{gap:10px}.message{padding:18px}.copy{font-size:17px;margin-top:10px}.message h2{font-size:25px}.eyebrow{margin-bottom:8px}.list-header{padding:12px}.item{padding:12px 0}.item h3{font-size:17px}.item p{font-size:15px}.caption{padding:16px;padding-top:35px}}
+</style></head><body><main class="screen">
+<header class="topbar"><div class="brand"><h1>PA Jarvis</h1><small>Your home at a glance</small></div><div class="clock"><div id="time"></div><div id="date"></div></div></header>
+<div class="layout">
+<section class="card message"><p class="eyebrow">Sample text</p><h2>A little progress, every day.</h2><p class="copy">Choose one thing that matters today. Give it your attention, and make room for something you enjoy.</p></section>
+<section class="card image-card">          <svg viewBox="0 0 800 460" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMid slice">
             <title id="landscape-title">Sample illustration of mountains reflected in a lake at sunrise</title>
             <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a9cddd"/><stop offset="1" stop-color="#f4dfbe"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#769fae"/><stop offset="1" stop-color="#254957"/></linearGradient></defs>
             <rect width="800" height="460" fill="url(#sky)"/>
@@ -71,23 +18,24 @@
             <path d="m0 316 105 81 118-80 112 107 135-109 127 70 203-66" fill="none" stroke="#afc3c1" stroke-width="2" opacity=".25"/>
             <path d="M530 345h173M140 370h135M385 401h215M61 427h260" stroke="#d3ddd2" stroke-width="3" opacity=".35"/>
             <path d="M0 460V295l21-48 20 48H29v33l29-62 27 62H68v45l32-70 33 70h-21v87Z" fill="#1a3b43"/>
-          </svg>
-          <div class="caption"><h2 id="image-heading">A moment of calm</h2><p>Sample image · replace with your own source later</p></div>
-        </section>
-      </aside>
-    </div>
-    <footer><span>PA Jarvis · TV view</span><span>Dashboard reloads every 60 seconds</span></footer>
-  </main>
-  <script>
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('time').textContent = now.toLocaleTimeString('en-CA', {timeZone: 'America/Toronto', hour: 'numeric', minute: '2-digit'});
-      document.getElementById('date').textContent = now.toLocaleDateString('en-CA', {timeZone: 'America/Toronto', weekday: 'long', month: 'long', day: 'numeric'});
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-    // Re-request the existing server-rendered dashboard, including fresh database data.
-    setInterval(() => { document.getElementById('dashboard-frame').src = '/?tv_refresh=' + Date.now(); }, 60000);
-  </script>
-</body>
-</html>
+          </svg><div class="caption"><h2>A moment of calm</h2><p>Sample image · replace with your own source later</p></div></section>
+<section class="lists" aria-label="Priority tasks and shopping">
+<article class="card list" id="tasks"><header class="list-header"><h2>Priority tasks</h2><span class="count">—</span></header><div class="items"></div><div class="page">Loading dashboard…</div></article>
+<article class="card list" id="shopping"><header class="list-header"><h2>Shopping list</h2><span class="count">—</span></header><div class="items"></div><div class="page">Loading dashboard…</div></article>
+</section></div><footer><span id="sync" role="status">Loading dashboard…</span><span>Refresh 60s · pages 15s</span></footer>
+<!-- Same-origin iframe reuses the existing rendered dashboard. Its records are presented in the TV layout. -->
+<iframe id="source" src="/" title="Dashboard data source" aria-hidden="true" tabindex="-1"></iframe>
+</main><script>
+const states={tasks:{rows:[],pages:[],index:0},shopping:{rows:[],pages:[],index:0}};
+function clock(){const n=new Date();document.querySelector('#time').textContent=n.toLocaleTimeString('en-CA',{timeZone:'America/Toronto',hour:'numeric',minute:'2-digit'});document.querySelector('#date').textContent=n.toLocaleDateString('en-CA',{timeZone:'America/Toronto',weekday:'long',month:'long',day:'numeric'});}clock();setInterval(clock,1000);
+function element(tag,cls,text){const e=document.createElement(tag);e.className=cls;e.textContent=text;return e;}
+function rowView(row){const a=element('article','item','');const top=element('div','item-top','');top.append(element('h3','',row.title));if(row.status)top.append(element('span','status',row.status));a.append(top);if(row.description)a.append(element('p','',row.description));return a;}
+function render(key){const s=states[key],card=document.getElementById(key),box=card.querySelector('.items');box.replaceChildren();const page=s.pages[s.index]||[];page.forEach(r=>box.append(rowView(r)));if(!s.rows.length)box.append(element('p','', 'Nothing urgent.'));card.querySelector('.count').textContent=s.rows.length+' items';card.querySelector('.page').textContent=s.pages.length>1?'Page '+(s.index+1)+' of '+s.pages.length+' · changes automatically':'All items shown';}
+function paginate(key){const s=states[key],box=document.querySelector('#'+key+' .items');s.pages=[];s.index=0;box.replaceChildren();let page=[];for(const row of s.rows){const node=rowView(row);box.append(node);if(box.scrollHeight>box.clientHeight+1&&page.length){s.pages.push(page);page=[];box.replaceChildren(node);}page.push(row);}if(page.length)s.pages.push(page);render(key);}
+function readPanel(doc,title){const heading=[...doc.querySelectorAll('h2')].find(h=>h.textContent.trim().toLowerCase()===title.toLowerCase());if(!heading)throw Error('Missing '+title+' panel');const panel=heading.closest('.list-panel, .list-card, .panel')||heading.closest('header')?.parentElement||heading.parentElement.parentElement;let records=[...panel.querySelectorAll('.list-item')];if(!records.length){records=[...panel.querySelectorAll('h3')].map(h=>h.closest('article')||h.closest('.item')||h.parentElement.parentElement);}
+return records.map(r=>({title:r.querySelector('h3')?.textContent.trim()||'',description:r.querySelector('.item-body p, p')?.textContent.trim()||'',status:r.querySelector('.badge, .status, .status-badge')?.textContent.trim()||''})).filter(r=>r.title);}
+const source=document.getElementById('source');source.addEventListener('load',()=>{try{const doc=source.contentDocument;const tasks=readPanel(doc,'Priority tasks'),shopping=readPanel(doc,'Shopping list');states.tasks.rows=tasks;states.shopping.rows=shopping;paginate('tasks');paginate('shopping');document.getElementById('sync').textContent='Dashboard updated '+new Date().toLocaleTimeString('en-CA',{timeZone:'America/Toronto',hour:'numeric',minute:'2-digit'});}catch(e){document.getElementById('sync').textContent='Dashboard unavailable · retrying in 60s';console.error(e);}});
+setInterval(()=>{source.src='/?tv_refresh='+Date.now();},60000);
+setInterval(()=>{for(const key of Object.keys(states)){const s=states[key];if(s.pages.length>1){s.index=(s.index+1)%s.pages.length;render(key);}}},15000);
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{paginate('tasks');paginate('shopping');},200);});
+</script></body></html>
