@@ -10,7 +10,7 @@ from ollama import (
     Tool,
 )
 
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 # Ollama's official Qwen3 8B model tag. Override these values in the environment
@@ -84,22 +84,14 @@ async def generate_response(
             }
         )
     request_messages.extend(messages)
+    shared_history = chat_history or []
+    chat_message = (
+        str(shared_history[-1].get("content", ""))
+        if shared_history
+        else ""
+    )
 
     try:
-        shared_history = chat_history or []
-        chat_message = (
-            str(shared_history[-1].get("content", ""))
-            if shared_history
-            else ""
-        )
-        await log_event_pgsql(
-            request_id=request_id,
-            chat_message=chat_message,
-            service_name="llm",
-            script_name="qwen_client.py",
-            event_type="call_qwen_api",
-            chat_history=shared_history,
-        )
         response = await AsyncClient(host=host, timeout=timeout_seconds).chat(
             model=model,
             messages=request_messages,
@@ -129,4 +121,19 @@ async def generate_response(
     if not isinstance(response, ChatResponse):
         raise QwenError("Ollama returned an unexpected streaming response.")
 
+    logged_history = [
+        *shared_history,
+        {
+            "role": "assistant",
+            "content": response.model_dump(mode="json", exclude_none=True),
+        },
+    ]
+    await log_service_event_pgsql(
+        request_id=request_id,
+        chat_message=chat_message,
+        service_name="llm",
+        script_name="qwen_client.py",
+        event_type="call_qwen_api",
+        chat_history=logged_history,
+    )
     return response

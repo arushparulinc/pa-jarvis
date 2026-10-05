@@ -2,7 +2,7 @@ import os
 
 import httpx
 
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 DEFAULT_TOOLS_SERVICE_URL = "http://127.0.0.1:8003"
@@ -33,7 +33,7 @@ async def execute_tool(
     )
 
     try:
-        await log_event_pgsql(
+        await log_service_event_pgsql(
             request_id=request_id,
             chat_message=f"Tool {name}: {arguments or {}}",
             service_name="agents",

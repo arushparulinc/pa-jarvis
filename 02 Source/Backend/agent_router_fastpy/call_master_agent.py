@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import httpx
 
-from call_storage import log_event_pgsql
+from call_storage import log_service_event_pgsql
 
 
 DEFAULT_MASTER_AGENT_URL = "http://127.0.0.1:8001"
@@ -29,7 +29,7 @@ async def invoke_master_agent(message: str) -> str:
     )
 
     try:
-        await log_event_pgsql(
+        await log_service_event_pgsql(
             request_id=request_id,
             chat_message=message,
             service_name="backend",

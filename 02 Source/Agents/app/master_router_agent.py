@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from . import call_llm, call_sub_agent
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 # Write master-router events to a dedicated file beside this module. Avoid
@@ -72,7 +72,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
         while True:
             try:
                 if provider == "qwen":
-                    await log_event_pgsql(
+                    await log_service_event_pgsql(
                         request_id=request_id,
                         chat_message=message,
                         service_name="agents",
@@ -89,7 +89,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                         )
                     )
                 else:
-                    await log_event_pgsql(
+                    await log_service_event_pgsql(
                         request_id=request_id,
                         chat_message=message,
                         service_name="agents",
@@ -164,7 +164,7 @@ async def route_chat_message(request_id: str, message: str) -> str:
                                 "agent_instructions."
                             )
 
-                        await log_event_pgsql(
+                        await log_service_event_pgsql(
                             request_id=request_id,
                             chat_message=(
                                 f"Tool {tool_name}: "

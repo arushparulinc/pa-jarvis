@@ -4,7 +4,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from . import qwen_client, system_instructions, tools_registry
-from .call_storage import log_event_pgsql, log_llm_call_pgsql
+from .call_storage import log_llm_call_pgsql, log_service_event_pgsql
 
 
 master_agent_logger = logging.getLogger("pa_jarvis.master_agent")
@@ -97,7 +97,7 @@ async def route_chat_message_qwen(
         if shared_history
         else ""
     )
-    await log_event_pgsql(
+    await log_service_event_pgsql(
         request_id=request_id,
         chat_message=chat_message,
         service_name="llm",

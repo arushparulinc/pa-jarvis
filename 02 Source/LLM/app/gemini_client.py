@@ -3,7 +3,7 @@ import os
 from google import genai
 from google.genai import errors, types
 
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 # Use this model unless GEMINI_MODEL overrides it in the environment.
@@ -49,28 +49,20 @@ async def generate_response(
 
     # Allow deployments to select a model without changing source code.
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
+    shared_history = chat_history or []
+    chat_message = (
+        str(shared_history[-1].get("content", ""))
+        if shared_history
+        else ""
+    )
 
     try:
         # The async client prevents the FastAPI event loop from blocking while
         # Gemini processes the request.
         async with genai.Client(api_key=api_key).aio as client:
-            shared_history = chat_history or []
-            chat_message = (
-                str(shared_history[-1].get("content", ""))
-                if shared_history
-                else ""
-            )
-            await log_event_pgsql(
-                request_id=request_id,
-                chat_message=chat_message,
-                service_name="llm",
-                script_name="gemini_client.py",
-                event_type="call_gemini_api",
-                chat_history=shared_history,
-            )
             # Pass conversation context and system instructions unchanged from
             # the router. The router manually executes any requested functions.
-            return await client.models.generate_content(
+            response = await client.models.generate_content(
                 model=model,
                 contents=contents,
                 config=types.GenerateContentConfig(
@@ -83,6 +75,22 @@ async def generate_response(
                     max_output_tokens=1_024,
                 ),
             )
+            logged_history = [
+                *shared_history,
+                {
+                    "role": "assistant",
+                    "content": response.model_dump(mode="json", exclude_none=True),
+                },
+            ]
+            await log_service_event_pgsql(
+                request_id=request_id,
+                chat_message=chat_message,
+                service_name="llm",
+                script_name="gemini_client.py",
+                event_type="call_gemini_api",
+                chat_history=logged_history,
+            )
+            return response
     except errors.APIError as exc:
         # Preserve Gemini's HTTP code, status, message, and structured response
         # so the API layer can report errors such as quota exhaustion accurately.

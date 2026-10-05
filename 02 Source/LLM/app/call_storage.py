@@ -8,7 +8,7 @@ DEFAULT_STORAGE_SERVICE_URL = "http://127.0.0.1:8004"
 DEFAULT_TIMEOUT_SECONDS = 30.0
 
 
-async def log_event_pgsql(
+async def log_service_event_pgsql(
     request_id: str,
     chat_message: str,
     service_name: str,
