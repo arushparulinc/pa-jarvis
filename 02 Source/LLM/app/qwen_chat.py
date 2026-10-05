@@ -4,7 +4,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from . import qwen_client, system_instructions, tools_registry
-from .call_storage import log_llm_call_pgsql, log_service_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 master_agent_logger = logging.getLogger("pa_jarvis.master_agent")
@@ -107,23 +107,11 @@ async def route_chat_message_qwen(
     )
     response = await qwen_client.generate_response(
         request_id=request_id,
+        calling_agent=calling_agent,
         messages=qwen_history,
         system_instruction=system_instruction,
         tools=qwen_tools,
         chat_history=shared_history,
-    )
-    await log_llm_call_pgsql(
-        request_id=request_id,
-        calling_agent_name=calling_agent,
-        message_sent=json.dumps(
-            {
-                "chat_history": shared_history,
-                "system_instructions": system_instruction,
-                "tools": qwen_tools,
-            },
-            default=str,
-        ),
-        message_response=response.model_dump_json(exclude_none=True),
     )
     master_agent_logger.info(
         "generate_qwen_response output=%s",
