@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 from google.genai import types
 
 from . import gemini_client, system_instructions, tools_registry
-from .call_storage import log_event_pgsql, log_llm_call_pgsql
+from .call_storage import log_llm_call_pgsql, log_service_event_pgsql
 
 
 LLM_TIME_ZONE = ZoneInfo("America/Toronto")
@@ -136,7 +136,7 @@ async def route_chat_message_gemini(
         if shared_history
         else ""
     )
-    await log_event_pgsql(
+    await log_service_event_pgsql(
         request_id=request_id,
         chat_message=chat_message,
         service_name="llm",

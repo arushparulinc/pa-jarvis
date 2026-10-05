@@ -10,7 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
 
 from . import tool_execution
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 app = FastAPI(
@@ -49,7 +49,7 @@ async def health() -> dict[str, str]:
 async def execute(request: ToolExecuteRequest) -> ToolExecuteResponse:
     """Execute one tool by its registered function name."""
     try:
-        await log_event_pgsql(
+        await log_service_event_pgsql(
             request_id=str(request.request_id),
             chat_message=f"Tool {request.name}: {request.arguments}",
             service_name="tools",

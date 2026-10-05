@@ -10,7 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
 
 from .master_router_agent import ChatError, route_chat_message
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 app = FastAPI(
@@ -57,7 +57,7 @@ async def health() -> dict[str, str]:
 async def invoke(request: InvokeRequest) -> InvokeResponse:
     """Invoke the master router with one user message."""
     try:
-        await log_event_pgsql(
+        await log_service_event_pgsql(
             request_id=str(request.request_id),
             chat_message=request.message,
             service_name="agents",

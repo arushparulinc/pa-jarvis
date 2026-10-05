@@ -1,5 +1,5 @@
 from . import call_llm, call_tools
-from .call_storage import log_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 MAX_TOOL_ROUNDS = 10
@@ -25,7 +25,7 @@ async def run_sub_agent(
 
     while True:
         try:
-            await log_event_pgsql(
+            await log_service_event_pgsql(
                 request_id=request_id,
                 chat_message=agent_instructions,
                 service_name="agents",
@@ -69,7 +69,7 @@ async def run_sub_agent(
                 tool_name = str(tool_call["name"])
                 arguments = tool_call.get("arguments", {})
                 try:
-                    await log_event_pgsql(
+                    await log_service_event_pgsql(
                         request_id=request_id,
                         chat_message=f"Tool {tool_name}: {arguments}",
                         service_name="agents",
