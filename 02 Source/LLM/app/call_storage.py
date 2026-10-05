@@ -36,7 +36,7 @@ async def log_service_event_pgsql(
         async with httpx.AsyncClient(timeout=DEFAULT_TIMEOUT_SECONDS) as client:
             response = await client.post(f"{base_url}/log-service-event", json=payload)
         return response.is_success
-    except httpx.RequestError:
+    except Exception:
         return False
 
 
@@ -65,5 +65,6 @@ async def log_llm_call_pgsql(
                 json=payload,
             )
         return response.is_success
-    except httpx.RequestError:
+    # Logging is best-effort and must never replace the LLM result or error.
+    except Exception:
         return False

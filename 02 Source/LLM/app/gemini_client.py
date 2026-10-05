@@ -1,9 +1,10 @@
+import json
 import os
 
 from google import genai
 from google.genai import errors, types
 
-from .call_storage import log_service_event_pgsql
+from .call_storage import log_llm_call_pgsql, log_service_event_pgsql
 
 
 # Use this model unless GEMINI_MODEL overrides it in the environment.
@@ -35,6 +36,7 @@ class GeminiAPIError(GeminiError):
 
 async def generate_response(
     request_id: str,
+    calling_agent: str,
     contents: list[dict[str, object] | types.Content],
     system_instruction: str,
     tools: list[types.Tool],
@@ -54,6 +56,28 @@ async def generate_response(
         str(shared_history[-1].get("content", ""))
         if shared_history
         else ""
+    )
+    message_sent = json.dumps(
+        {
+            "model": model,
+            "contents": [
+                content.model_dump(mode="json", exclude_none=True)
+                if isinstance(content, types.Content)
+                else content
+                for content in contents
+            ],
+            "system_instruction": system_instruction,
+            "tools": [
+                tool.model_dump(mode="json", exclude_none=True)
+                for tool in tools
+            ],
+            "config": {
+                "temperature": 0.7,
+                "max_output_tokens": 1_024,
+                "automatic_function_calling_disabled": True,
+            },
+        },
+        default=str,
     )
 
     try:
@@ -75,6 +99,12 @@ async def generate_response(
                     max_output_tokens=1_024,
                 ),
             )
+            await log_llm_call_pgsql(
+                request_id=request_id,
+                calling_agent_name=calling_agent,
+                message_sent=message_sent,
+                message_response=response.model_dump_json(exclude_none=True),
+            )
             logged_history = [
                 *shared_history,
                 {
@@ -92,6 +122,22 @@ async def generate_response(
             )
             return response
     except errors.APIError as exc:
+        await log_llm_call_pgsql(
+            request_id=request_id,
+            calling_agent_name=calling_agent,
+            message_sent=message_sent,
+            message_response=json.dumps(
+                {
+                    "success": False,
+                    "error_type": type(exc).__name__,
+                    "error_message": exc.message or str(exc),
+                    "status_code": exc.code,
+                    "status": exc.status,
+                    "details": exc.details,
+                },
+                default=str,
+            ),
+        )
         # Preserve Gemini's HTTP code, status, message, and structured response
         # so the API layer can report errors such as quota exhaustion accurately.
         raise GeminiAPIError(
@@ -101,6 +147,19 @@ async def generate_response(
             details=exc.details,
         ) from exc
     except Exception as exc:
+        await log_llm_call_pgsql(
+            request_id=request_id,
+            calling_agent_name=calling_agent,
+            message_sent=message_sent,
+            message_response=json.dumps(
+                {
+                    "success": False,
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc),
+                },
+                default=str,
+            ),
+        )
         # Convert SDK/network errors into the stable application exception that
         # the FastAPI layer already maps to an HTTP 502 response.
         raise GeminiError(

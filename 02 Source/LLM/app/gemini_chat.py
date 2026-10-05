@@ -1,11 +1,10 @@
-import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from google.genai import types
 
 from . import gemini_client, system_instructions, tools_registry
-from .call_storage import log_llm_call_pgsql, log_service_event_pgsql
+from .call_storage import log_service_event_pgsql
 
 
 LLM_TIME_ZONE = ZoneInfo("America/Toronto")
@@ -146,25 +145,10 @@ async def route_chat_message_gemini(
     )
     response = await gemini_client.generate_response(
         request_id=request_id,
+        calling_agent=calling_agent,
         contents=gemini_history,
         system_instruction=system_instruction,
         tools=gemini_tools,
         chat_history=shared_history,
-    )
-    await log_llm_call_pgsql(
-        request_id=request_id,
-        calling_agent_name=calling_agent,
-        message_sent=json.dumps(
-            {
-                "chat_history": shared_history,
-                "system_instructions": system_instruction,
-                "tools": [
-                    tool.model_dump(mode="json", exclude_none=True)
-                    for tool in gemini_tools
-                ],
-            },
-            default=str,
-        ),
-        message_response=response.model_dump_json(exclude_none=True),
     )
     return _parse_response_parts(response)
