@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <meta http-equiv="refresh" content="15">
-  <title>PA Jarvis · Priority dashboard</title>
+  <title>PA Jarvis · Priority Dashboard</title>
   <style>
     :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17253b;background:#f5f7fb;font-synthesis:none}
     *{box-sizing:border-box}body{margin:0}a{color:inherit}button{font:inherit}
@@ -36,7 +36,7 @@
     </section>
     <section class="boards" aria-label="Priority lists">
       <section class="panel" aria-labelledby="tasks-title">
-        <header class="panel-header"><div class="panel-title"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/></svg></span><div><h2 id="tasks-title">Priority tasks</h2><p class="panel-subtitle">Things to get done</p></div></div><span class="count">{{ task_count }} item{{ '' if task_count == 1 else 's' }}</span></header>
+        <header class="panel-header"><div class="panel-title"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/></svg></span><div><h2 id="tasks-title">Priority Tasks</h2><p class="panel-subtitle">Things to get done</p></div></div><span class="count">{{ task_count }} item{{ '' if task_count == 1 else 's' }}</span></header>
         <div class="items">
           {% for task in tasks %}
             {% set done = task.task_status|default('', true)|lower in completed_statuses %}
@@ -45,7 +45,7 @@
         </div>
       </section>
       <section class="panel" aria-labelledby="shopping-title">
-        <header class="panel-header"><div class="panel-title"><span class="icon shop" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9h18l-2 11H5L3 9Z"/><path d="m8 9 4-6 4 6M9 13v3m6-3v3"/></svg></span><div><h2 id="shopping-title">Shopping list</h2><p class="panel-subtitle">Things to pick up</p></div></div><span class="count">{{ shopping_count }} item{{ '' if shopping_count == 1 else 's' }}</span></header>
+        <header class="panel-header"><div class="panel-title"><span class="icon shop" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9h18l-2 11H5L3 9Z"/><path d="m8 9 4-6 4 6M9 13v3m6-3v3"/></svg></span><div><h2 id="shopping-title">Shopping List</h2><p class="panel-subtitle">Things to pick up</p></div></div><span class="count">{{ shopping_count }} item{{ '' if shopping_count == 1 else 's' }}</span></header>
         <div class="items">
           {% for item in shopping_items %}
             {% set done = item.item_status|default('', true)|lower in completed_statuses %}
