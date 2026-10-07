@@ -36,6 +36,6 @@ function readPanel(doc,title){const heading=[...doc.querySelectorAll('h2')].find
 return records.map(r=>({title:r.querySelector('h3')?.textContent.trim()||'',description:r.querySelector('.item-body p, p')?.textContent.trim()||'',status:r.querySelector('.badge, .status, .status-badge')?.textContent.trim()||''})).filter(r=>r.title);}
 const source=document.getElementById('source');source.addEventListener('load',()=>{try{const doc=source.contentDocument;const tasks=readPanel(doc,'Priority tasks'),shopping=readPanel(doc,'Shopping list');states.tasks.rows=tasks;states.shopping.rows=shopping;paginate('tasks');paginate('shopping');document.getElementById('sync').textContent='Dashboard updated '+new Date().toLocaleTimeString('en-CA',{timeZone:'America/Toronto',hour:'numeric',minute:'2-digit'});}catch(e){document.getElementById('sync').textContent='Dashboard unavailable · retrying in 60s';console.error(e);}});
 setInterval(()=>{source.src='/?tv_refresh='+Date.now();},60000);
-setInterval(()=>{for(const key of Object.keys(states)){const s=states[key];if(s.pages.length>1){s.index=(s.index+1)%s.pages.length;render(key);}}},15000);
+setInterval(()=>{for(const key of Object.keys(states)){const s=states[key];if(s.pages.length>1){s.index=(s.index+1)%s.pages.length;render(key);}}},5000);
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{paginate('tasks');paginate('shopping');},200);});
 </script></body></html>
