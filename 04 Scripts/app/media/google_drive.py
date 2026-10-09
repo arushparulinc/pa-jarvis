@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import secrets
 
-from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
@@ -18,30 +18,57 @@ class AKGoogleDriveError(RuntimeError):
     """Raised when scheduled media cannot be read from Google Drive."""
 
 
+def save_downloaded_file(media: dict[str, object], subdirectory: str) -> Path:
+    """Persist downloaded media beneath the configured shared data directory."""
+    data_dir = os.getenv("AK_DATA_DIR", "").strip()
+    if not data_dir:
+        raise AKGoogleDriveError("AK_DATA_DIR is not configured.")
+
+    file_name = Path(str(media["file_name"])).name
+    if not file_name:
+        raise AKGoogleDriveError("The downloaded Google Drive file has no valid name.")
+
+    content = media.get("content")
+    if not isinstance(content, bytes):
+        raise AKGoogleDriveError("The downloaded Google Drive file has no byte content.")
+
+    destination_dir = Path(data_dir) / subdirectory
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    destination = destination_dir / file_name
+    destination.write_bytes(content)
+    return destination
+
+
 def _escape_query_value(value: str) -> str:
     return value.replace("\\", "\\\\").replace("'", "\\'")
 
 
 def _get_drive_service():
-    credentials_value = os.getenv("AK_GOOGLE_APPLICATION_CREDENTIALS", "").strip()
-    if not credentials_value:
-        raise AKGoogleDriveError("AK_GOOGLE_APPLICATION_CREDENTIALS is not configured.")
-
-    credentials_path = Path(credentials_value)
-    if not credentials_path.is_file():
+    client_id = os.getenv("AK_GOOGLE_CLIENT_ID", "").strip()
+    client_secret = os.getenv("AK_GOOGLE_CLIENT_SECRET", "").strip()
+    refresh_token = os.getenv("AK_GOOGLE_REFRESH_TOKEN", "").strip()
+    missing = [
+        name
+        for name, value in (
+            ("AK_GOOGLE_CLIENT_ID", client_id),
+            ("AK_GOOGLE_CLIENT_SECRET", client_secret),
+            ("AK_GOOGLE_REFRESH_TOKEN", refresh_token),
+        )
+        if not value
+    ]
+    if missing:
         raise AKGoogleDriveError(
-            f"Google service-account file was not found at {credentials_path}."
+            "Missing Google Drive OAuth configuration: " + ", ".join(missing)
         )
 
-    try:
-        credentials = service_account.Credentials.from_service_account_file(
-            str(credentials_path),
-            scopes=AK_GDRIVE_SCOPES,
-        )
-    except (OSError, ValueError) as exc:
-        raise AKGoogleDriveError(
-            f"Google service-account credentials are invalid: {exc}"
-        ) from exc
+    credentials = Credentials(
+        token=None,
+        refresh_token=refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=AK_GDRIVE_SCOPES,
+    )
 
     return build("drive", "v3", credentials=credentials, cache_discovery=False)
 
