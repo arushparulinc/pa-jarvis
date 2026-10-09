@@ -11,6 +11,9 @@ devUpstream:
   ip: ""
   port: 80
 
+sharedData:
+  hostPath: /Users/arushkumar/apinc/data
+
 frontend:
   njsEnv: " - DEV"
   image:

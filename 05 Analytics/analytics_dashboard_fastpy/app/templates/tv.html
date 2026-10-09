@@ -1,16 +1,45 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PA Jarvis · Portrait TV</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#0c1729;color:#f4f7fc;font-family:Arial,Helvetica,sans-serif}.screen{height:100vh;height:100dvh;padding:24px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:18px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px}h1{font-size:30px;margin:0}.brand small{display:block;margin-top:6px;color:#9aacc7;font-size:16px}.clock{text-align:right}#time{font-size:34px;font-weight:bold}#date{font-size:16px;color:#acbdd4;margin-top:6px}.layout{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr) minmax(0,2fr);gap:18px}.card{border:1px solid #2c405e;border-radius:20px;overflow:hidden;background:#16253c}.message{padding:30px;display:flex;flex-direction:column;justify-content:center}.eyebrow{color:#87b5ff;font-size:15px;letter-spacing:2px;text-transform:uppercase;margin:0 0 16px}.message h2{font-size:clamp(28px,3.7vw,44px);line-height:1.15;margin:0}.copy{font-size:clamp(20px,2.3vw,28px);line-height:1.45;color:#c2cfe2;margin:18px 0 0}.image-card{position:relative}.image-card svg{width:100%;height:100%;display:block;object-fit:cover}.caption{position:absolute;bottom:0;left:0;right:0;padding:22px;background:linear-gradient(transparent,rgba(8,24,35,.88));padding-top:50px}.caption h2{font-size:26px;margin:0}.caption p{font-size:15px;margin:8px 0 0;color:#d1deeb}.lists{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;min-height:0}.list{display:flex;flex-direction:column;background:#f5f8fd;color:#192c46;min-height:0}.list-header{background:#dceafe;padding:22px 18px;display:flex;align-items:center;justify-content:space-between;gap:8px}.list-header h2{font-size:clamp(20px,2.5vw,28px);margin:0;color:#23467d}.count{background:white;border-radius:20px;padding:6px 10px;white-space:nowrap;font-size:14px}.items{flex:1;min-height:0;overflow:hidden;padding:0 18px}.item{padding:20px 0;border-bottom:1px solid #dce4ef;overflow-wrap:anywhere}.item:last-child{border-bottom:0}.item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.item h3{font-size:clamp(18px,2.2vw,25px);line-height:1.25;margin:0}.status{font-size:12px;background:#e6eefb;color:#355d8d;border-radius:7px;padding:5px 7px}.item p{font-size:clamp(16px,1.8vw,20px);line-height:1.4;color:#687b94;margin:10px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.page{padding:12px 18px;color:#6c809a;font-size:13px;min-height:40px;border-top:1px solid #dce4ef}footer{font-size:13px;color:#91a6c4;display:flex;justify-content:space-between;gap:12px}#source{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0} @media(max-height:800px){.screen{padding:12px;gap:10px}.layout,.lists{gap:10px}.message{padding:18px}.copy{font-size:17px;margin-top:10px}.message h2{font-size:25px}.eyebrow{margin-bottom:8px}.list-header{padding:12px}.item{padding:12px 0}.item h3{font-size:17px}.item p{font-size:15px}.caption{padding:16px;padding-top:35px}}
+*{box-sizing:border-box}
+body{margin:0;background:#0c1729;color:#f4f7fc;font-family:Arial,Helvetica,sans-serif}
+.screen{height:100vh;height:100dvh;padding:18px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px}
+h1{font-size:30px;margin:0}.brand small{display:block;margin-top:6px;color:#9aacc7;font-size:16px}
+.clock{text-align:right}#time{font-size:34px;font-weight:bold}#date{font-size:16px;color:#acbdd4;margin-top:6px}
+.layout{min-height:0;display:grid;grid-template-rows:21fr 16fr 33fr 30fr;gap:12px}
+.card{border:1px solid #2c405e;border-radius:18px;overflow:hidden;background:#16253c;min-height:0}
+.image-card{position:relative}.image-card svg{width:100%;height:100%;display:block}
+.message{padding:18px 24px;display:flex;flex-direction:column;justify-content:center}
+.eyebrow{color:#87b5ff;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 8px}
+.message h2{font-size:clamp(18px,2.6vw,31px);line-height:1.15;margin:0}
+.copy{font-size:clamp(13px,1.6vw,20px);line-height:1.4;color:#c2cfe2;margin:8px 0 0}
+.family-photo{position:relative;background:#101f33;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.family-photo img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.photo-caption{position:absolute;bottom:0;left:0;right:0;padding:26px 20px 14px;background:linear-gradient(transparent,rgba(5,17,29,.75));font-size:17px;font-weight:600}
+.lists{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;min-height:0}
+.list{display:flex;flex-direction:column;background:#f5f8fd;color:#192c46}
+.list-header{background:#dceafe;padding:14px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.list-header h2{font-size:clamp(14px,1.75vw,20px);margin:0;color:#23467d}
+.count{background:white;border-radius:20px;padding:4px 7px;white-space:nowrap;font-size:10px}
+.items{flex:1;min-height:0;overflow:hidden;padding:0 12px}
+.item{padding:14px 0;border-bottom:1px solid #dce4ef;overflow-wrap:anywhere}.item:last-child{border-bottom:0}
+.item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.item h3{font-size:clamp(13px,1.54vw,18px);line-height:1.25;margin:0}
+.status{font-size:9px;background:#e6eefb;color:#355d8d;border-radius:7px;padding:4px 5px}
+.item p{font-size:clamp(11px,1.26vw,14px);line-height:1.4;color:#687b94;margin:7px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.page{padding:8px 12px;color:#6c809a;font-size:10px;min-height:28px;border-top:1px solid #dce4ef}
+footer{font-size:11px;color:#91a6c4;display:flex;justify-content:space-between;gap:12px}
+#source{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0}
+@media(max-height:800px){.screen{padding:10px;gap:7px}.layout,.lists{gap:7px}.message{padding:10px 14px}.message h2{font-size:16px}.copy{font-size:11px;margin-top:5px}.eyebrow{font-size:9px;margin-bottom:4px}.list-header{padding:8px}.item{padding:7px 0}.item h3{font-size:12px}.item p{font-size:10px}.page{padding:5px 8px;min-height:20px}.photo-caption{padding:16px 12px 8px;font-size:12px}}
 </style></head><body><main class="screen">
 <header class="topbar"><div class="brand"><h1>PA Jarvis</h1><small>Your home at a glance</small></div><div class="clock"><div id="time"></div><div id="date"></div></div></header>
 <div class="layout">
-<section class="card message"><p class="eyebrow">Sample text</p><h2>A little progress, every day.</h2><p class="copy">Choose one thing that matters today. Give it your attention, and make room for something you enjoy.</p></section>
-<section class="card image-card">          <svg viewBox="0 0 800 460" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMid slice">
-            <title id="landscape-title">Sample illustration of mountains reflected in a lake at sunrise</title>
+<section class="card image-card" aria-label="Mountain landscape"><svg viewBox="0 0 800 460" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMin slice">
+            <title id="landscape-title">Mountains reflected in a lake at sunrise</title>
             <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a9cddd"/><stop offset="1" stop-color="#f4dfbe"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#769fae"/><stop offset="1" stop-color="#254957"/></linearGradient></defs>
             <rect width="800" height="460" fill="url(#sky)"/>
-            <circle cx="615" cy="108" r="48" fill="#fff0cb"/>
+            <circle cx="615" cy="70" r="48" fill="#fff0cb"/>
             <path d="M0 278 145 85 286 253 404 110 556 265 682 155 800 283V340H0Z" fill="#7896a5"/>
             <path d="m103 142 42-57 57 68-51-24-22 27Z M363 165l41-55 45 55-42-21Z" fill="#edf3ed"/>
             <path d="M0 290 105 204 223 290 335 188 470 294 597 223 800 301V349H0Z" fill="#395b6c"/>
@@ -18,11 +47,13 @@
             <path d="m0 316 105 81 118-80 112 107 135-109 127 70 203-66" fill="none" stroke="#afc3c1" stroke-width="2" opacity=".25"/>
             <path d="M530 345h173M140 370h135M385 401h215M61 427h260" stroke="#d3ddd2" stroke-width="3" opacity=".35"/>
             <path d="M0 460V295l21-48 20 48H29v33l29-62 27 62H68v45l32-70 33 70h-21v87Z" fill="#1a3b43"/>
-          </svg><div class="caption"><h2>A moment of calm</h2><p>Sample image · replace with your own source later</p></div></section>
+          </svg></section>
+<section class="card message"><p class="eyebrow">Daily Thought</p><h2>A little progress, every day.</h2><p class="copy">Choose one thing that matters today. Give it your attention, and make room for something you enjoy.</p></section>
+<section class="card family-photo" aria-label="Photo gallery"><img id="family-photo" src="/media/pics/latest" alt="A randomly selected family photo" onload="this.style.display='block'" onerror="this.style.display='none'"><div class="photo-caption">Our moments</div></section>
 <section class="lists" aria-label="Priority tasks and shopping">
 <article class="card list" id="tasks"><header class="list-header"><h2>Priority Tasks</h2><span class="count">—</span></header><div class="items"></div><div class="page">Loading dashboard…</div></article>
 <article class="card list" id="shopping"><header class="list-header"><h2>Shopping List</h2><span class="count">—</span></header><div class="items"></div><div class="page">Loading dashboard…</div></article>
-</section></div><footer><span id="sync" role="status">Loading dashboard…</span><span>Refresh 15s · pages 5s</span></footer>
+</section></div><footer><span id="sync" role="status">Loading dashboard…</span><span>Dashboard Refresh 15s - Pages Refresh 5s</span></footer>
 <!-- Same-origin iframe reuses the existing rendered dashboard. Its records are presented in the TV layout. -->
 <iframe id="source" src="/" title="Dashboard data source" aria-hidden="true" tabindex="-1"></iframe>
 </main><script>
@@ -36,6 +67,12 @@ function readPanel(doc,title){const heading=[...doc.querySelectorAll('h2')].find
 return records.map(r=>({title:r.querySelector('h3')?.textContent.trim()||'',description:r.querySelector('.item-body p, p')?.textContent.trim()||'',status:r.querySelector('.badge, .status, .status-badge')?.textContent.trim()||''})).filter(r=>r.title);}
 const source=document.getElementById('source');source.addEventListener('load',()=>{try{const doc=source.contentDocument;const tasks=readPanel(doc,'Priority tasks'),shopping=readPanel(doc,'Shopping list');states.tasks.rows=tasks;states.shopping.rows=shopping;paginate('tasks');paginate('shopping');document.getElementById('sync').textContent='Dashboard updated '+new Date().toLocaleTimeString('en-CA',{timeZone:'America/Toronto',hour:'numeric',minute:'2-digit'});}catch(e){document.getElementById('sync').textContent='Dashboard unavailable · retrying in 60s';console.error(e);}});
 setInterval(()=>{source.src='/?tv_refresh='+Date.now();},60000);
+let pictureUrls=[],pictureIndex=-1;
+function showNextPicture(){if(!pictureUrls.length)return;pictureIndex=(pictureIndex+1)%pictureUrls.length;const photo=document.getElementById('family-photo');photo.src=pictureUrls[pictureIndex]+'?refresh='+Date.now();}
+async function refreshPictures(){try{const response=await fetch('/media/pics',{cache:'no-store'});if(!response.ok)throw Error('Picture list returned HTTP '+response.status);const data=await response.json();pictureUrls=Array.isArray(data.pictures)?data.pictures:[];if(pictureIndex>=pictureUrls.length)pictureIndex=-1;if(pictureUrls.length)showNextPicture();}catch(error){console.error('Unable to refresh pictures:',error);}}
+refreshPictures();
+setInterval(showNextPicture,15000);
+setInterval(refreshPictures,60000);
 setInterval(()=>{for(const key of Object.keys(states)){const s=states[key];if(s.pages.length>1){s.index=(s.index+1)%s.pages.length;render(key);}}},5000);
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{paginate('tasks');paginate('shopping');},200);});
 </script></body></html>

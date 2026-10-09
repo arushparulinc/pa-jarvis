@@ -161,7 +161,25 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error(`Chat request failed with status ${response.status}`);
+        const errorBody = await response.text();
+        let errorDetail = errorBody;
+
+        if (errorBody) {
+          try {
+            const errorData = JSON.parse(errorBody);
+            errorDetail = errorData.detail
+              ? typeof errorData.detail === "string"
+                ? errorData.detail
+                : JSON.stringify(errorData.detail)
+              : errorBody;
+          } catch {
+            // Keep the raw response when the backend did not return JSON.
+          }
+        }
+
+        throw new Error(
+          `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
+        );
       }
 
       const data = await response.json();
@@ -171,12 +189,16 @@ function App() {
       ]);
     } catch (error) {
       console.error("Unable to reach the chat API:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       setMessages((current) => [
         ...current,
         {
           id: `error-${Date.now()}`,
           role: "assistant",
-          text: "I could not reach the server. Please make sure the FastAPI backend is running.",
+          text:
+            "I could not reach the server. Please make sure the FastAPI backend is running.\n\n" +
+            `Error: ${errorMessage}`,
         },
       ]);
     } finally {

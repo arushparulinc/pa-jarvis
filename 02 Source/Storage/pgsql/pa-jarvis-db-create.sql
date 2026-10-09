@@ -297,3 +297,21 @@ ALTER TABLE IF EXISTS toolsdata.shopping_list OWNER to postgres;
 GRANT ALL ON TABLE toolsdata.shopping_list TO :pgsql_user;
 
 GRANT ALL ON TABLE toolsdata.shopping_list TO postgres;
+
+
+CREATE TABLE IF NOT EXISTS toolsdata.google_calendar_events
+(
+    google_event_id character varying(1024) COLLATE pg_catalog."default" NOT NULL,
+    event_name character varying(500) COLLATE pg_catalog."default" NOT NULL,
+    event_description text COLLATE pg_catalog."default",
+    start_at timestamp with time zone NOT NULL,
+    end_at timestamp with time zone NOT NULL,
+    is_all_day boolean NOT NULL DEFAULT false,
+    CONSTRAINT google_calendar_events_pkey PRIMARY KEY (google_event_id)
+);
+
+ALTER TABLE IF EXISTS toolsdata.google_calendar_events OWNER to postgres;
+
+GRANT ALL ON TABLE toolsdata.google_calendar_events TO :pgsql_user;
+
+GRANT ALL ON TABLE toolsdata.google_calendar_events TO postgres;

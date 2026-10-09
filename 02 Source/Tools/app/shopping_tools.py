@@ -66,7 +66,7 @@ async def add_item(
     item_description: str = "",
     item_priority: str = "High",
 ) -> dict[str, object]:
-    """Add an item to the PostgreSQL shopping list."""
+    """Add an item to the PostgreSQL shopping list with High priority."""
     connection = await _connect_postgres()
     try:
         row = await connection.fetchrow(
@@ -88,7 +88,7 @@ async def add_item(
             """,
             item_name,
             item_description or None,
-            item_priority or "High",
+            "High",
         )
         return _item_record(row)
     except asyncpg.UniqueViolationError as exc:
