@@ -7,15 +7,15 @@ body{margin:0;background:#0c1729;color:#f4f7fc;font-family:Arial,Helvetica,sans-
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px}
 h1{font-size:30px;margin:0}.brand small{display:block;margin-top:6px;color:#9aacc7;font-size:16px}
 .clock{text-align:right}#time{font-size:34px;font-weight:bold}#date{font-size:16px;color:#acbdd4;margin-top:6px}
-.layout{min-height:0;display:grid;grid-template-rows:21fr 16fr 33fr 30fr;gap:12px}
+.layout{min-height:0;display:grid;grid-template-rows:18fr 13fr 28fr 12fr 29fr;gap:12px}
 .card{border:1px solid #2c405e;border-radius:18px;overflow:hidden;background:#16253c;min-height:0}
 .image-card{position:relative}.image-card svg{width:100%;height:100%;display:block}
 .message{padding:18px 24px;display:flex;flex-direction:column;justify-content:center}
 .eyebrow{color:#87b5ff;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 8px}
 .message h2{font-size:clamp(18px,2.6vw,31px);line-height:1.15;margin:0}
 .copy{font-size:clamp(13px,1.6vw,20px);line-height:1.4;color:#c2cfe2;margin:8px 0 0}
-.family-photo{position:relative;background:#101f33;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.family-photo img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.family-photo{position:relative;background:#101f33;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:14px}
+.family-photo img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;border:8px solid #f7f3e8;border-radius:4px;box-shadow:0 5px 18px rgba(0,0,0,.45)}
 .photo-caption{position:absolute;bottom:0;left:0;right:0;padding:26px 20px 14px;background:linear-gradient(transparent,rgba(5,17,29,.75));font-size:17px;font-weight:600}
 .lists{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;min-height:0}
 .list{display:flex;flex-direction:column;background:#f5f8fd;color:#192c46}
@@ -32,6 +32,23 @@ h1{font-size:30px;margin:0}.brand small{display:block;margin-top:6px;color:#9aac
 footer{font-size:11px;color:#91a6c4;display:flex;justify-content:space-between;gap:12px}
 #source{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0}
 @media(max-height:800px){.screen{padding:10px;gap:7px}.layout,.lists{gap:7px}.message{padding:10px 14px}.message h2{font-size:16px}.copy{font-size:11px;margin-top:5px}.eyebrow{font-size:9px;margin-bottom:4px}.list-header{padding:8px}.item{padding:7px 0}.item h3{font-size:12px}.item p{font-size:10px}.page{padding:5px 8px;min-height:20px}.photo-caption{padding:16px 12px 8px;font-size:12px}}
+
+/* Seven-day calendar, between photo and lists */
+.calendar{display:grid;grid-template-columns:22% minmax(0,1fr);background:#f5f8fd;color:#192c46}
+.calendar-label{display:flex;flex-direction:column;justify-content:center;padding:12px 15px;background:#dceafe;border-right:1px solid #bdcde1}
+.calendar-label strong{font-size:clamp(15px,1.9vw,23px);color:#23467d;line-height:1.2}
+.calendar-label span{font-size:11px;color:#587396;margin-top:8px}
+.calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));min-width:0}
+.calendar-day{min-width:0;border-right:1px solid #d7e0ed;display:flex;flex-direction:column}
+.calendar-day:last-child{border-right:0}
+.calendar-day.today{background:#e8f1ff}
+.calendar-day-header{text-align:center;border-bottom:1px solid #d7e0ed;padding:10px 2px 8px;flex:none}
+.calendar-day-header b{display:block;font-size:clamp(10px,1.4vw,16px);color:#23467d}
+.calendar-day-header small{display:block;font-size:11px;color:#657a96;margin-top:4px}
+.calendar-day-events{padding:7px 5px;overflow:hidden;min-height:0}
+.calendar-event{font-size:clamp(9px,1.15vw,13px);line-height:1.25;background:#dceafe;border-left:3px solid #4e83c7;padding:5px 4px;margin-bottom:5px;border-radius:3px;overflow-wrap:anywhere}
+.calendar-event time{display:block;font-weight:bold;color:#345d91;margin-bottom:2px}
+@media(max-height:800px){.calendar-label{padding:7px}.calendar-day-header{padding:5px 2px}.calendar-day-events{padding:4px 2px}.calendar-event{padding:3px 2px}}
 </style></head><body><main class="screen">
 <header class="topbar"><div class="brand"><h1>PA Jarvis</h1><small>Your home at a glance</small></div><div class="clock"><div id="time"></div><div id="date"></div></div></header>
 <div class="layout">
@@ -50,10 +67,14 @@ footer{font-size:11px;color:#91a6c4;display:flex;justify-content:space-between;g
           </svg></section>
 <section class="card message"><p class="eyebrow">Daily Thought</p><h2>A little progress, every day.</h2><p class="copy">Choose one thing that matters today. Give it your attention, and make room for something you enjoy.</p></section>
 <section class="card family-photo" aria-label="Photo gallery"><img id="family-photo" src="/media/pics/latest" alt="A randomly selected family photo" onload="this.style.display='block'" onerror="this.style.display='none'"><div class="photo-caption">Our moments</div></section>
+<section class="card calendar" aria-label="Upcoming calendar events">
+<div class="calendar-label"><strong>Upcoming<br>Events</strong><span id="calendar-status">Loading events…</span></div>
+<div class="calendar-days" id="calendar-days"></div>
+</section>
 <section class="lists" aria-label="Priority tasks and shopping">
 <article class="card list" id="tasks"><header class="list-header"><h2>Priority Tasks</h2><span class="count">—</span></header><div class="items"></div><div class="page">Loading dashboard…</div></article>
 <article class="card list" id="shopping"><header class="list-header"><h2>Shopping List</h2><span class="count">—</span></header><div class="items"></div><div class="page">Loading dashboard…</div></article>
-</section></div><footer><span id="sync" role="status">Loading dashboard…</span><span>Dashboard Refresh 15s - Pages Refresh 5s</span></footer>
+</section></div><footer><span id="sync" role="status">Loading dashboard…</span><span>Dashboard Refresh 60s - Lists Refresh 15s</span></footer>
 <!-- Same-origin iframe reuses the existing rendered dashboard. Its records are presented in the TV layout. -->
 <iframe id="source" src="/" title="Dashboard data source" aria-hidden="true" tabindex="-1"></iframe>
 </main><script>
@@ -73,6 +94,16 @@ async function refreshPictures(){try{const response=await fetch('/media/pics',{c
 refreshPictures();
 setInterval(showNextPicture,15000);
 setInterval(refreshPictures,60000);
-setInterval(()=>{for(const key of Object.keys(states)){const s=states[key];if(s.pages.length>1){s.index=(s.index+1)%s.pages.length;render(key);}}},5000);
+setInterval(()=>{for(const key of Object.keys(states)){const s=states[key];if(s.pages.length>1){s.index=(s.index+1)%s.pages.length;render(key);}}},15000);
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{paginate('tasks');paginate('shopping');},200);});
+
+// Live seven-day calendar populated from the Analytics PostgreSQL endpoint.
+const CALENDAR_ZONE='America/Toronto';
+function dayKey(date){return new Intl.DateTimeFormat('en-CA',{timeZone:CALENDAR_ZONE,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);}
+function todayStart(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:CALENDAR_ZONE,year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());const obj=Object.fromEntries(parts.map(p=>[p.type,p.value]));return new Date(Date.UTC(Number(obj.year),Number(obj.month)-1,Number(obj.day),12));}
+function renderCalendar(events){const root=document.getElementById('calendar-days');root.replaceChildren();const base=todayStart();const current=dayKey(new Date());for(let i=0;i<7;i++){const d=new Date(base.getTime()+i*86400000);const key=dayKey(d);const col=element('div','calendar-day'+(key===current?' today':''),'');const head=element('div','calendar-day-header','');head.append(element('b','',new Intl.DateTimeFormat('en-CA',{timeZone:CALENDAR_ZONE,weekday:'short'}).format(d)),element('small','',new Intl.DateTimeFormat('en-CA',{timeZone:CALENDAR_ZONE,month:'short',day:'numeric'}).format(d)));col.append(head);const box=element('div','calendar-day-events','');const todays=events.filter(e=>e.start&&dayKey(new Date(e.start))===key);for(const event of todays.slice(0,3)){const item=element('div','calendar-event','');const t=event.allDay?'All day':new Intl.DateTimeFormat('en-CA',{timeZone:CALENDAR_ZONE,hour:'numeric',minute:'2-digit'}).format(new Date(event.start));item.append(element('time','',t),element('span','',event.title||'Event'));box.append(item);}if(todays.length>3)box.append(element('small','',`+${todays.length-3} more`));col.append(box);root.append(col);}}
+renderCalendar([]);
+const CALENDAR_API_URL='/api/calendar-events';
+async function refreshCalendar(){try{const response=await fetch(CALENDAR_API_URL,{cache:'no-store'});if(!response.ok)throw Error(`HTTP ${response.status}`);const data=await response.json();if(!Array.isArray(data.events))throw Error('Expected an events array');renderCalendar(data.events);document.getElementById('calendar-status').textContent='Next 7 days · Updated '+new Date().toLocaleTimeString('en-CA',{timeZone:CALENDAR_ZONE,hour:'numeric',minute:'2-digit'});}catch(error){console.error('Calendar unavailable:',error);document.getElementById('calendar-status').textContent='Calendar unavailable · retrying in 60s';}}
+refreshCalendar();setInterval(refreshCalendar,60000);
 </script></body></html>
