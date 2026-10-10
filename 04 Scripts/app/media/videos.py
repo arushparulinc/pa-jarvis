@@ -4,7 +4,7 @@ import asyncio
 import importlib
 
 from ..call_storage import log_script_execution
-from .google_drive import download_random_file
+from .google_drive import download_random_file, save_downloaded_file
 
 
 gmail = importlib.import_module("app.002 Comms.gmail")
@@ -13,6 +13,7 @@ gmail = importlib.import_module("app.002 Comms.gmail")
 @log_script_execution("media.videos")
 async def run() -> dict[str, str]:
     media = await asyncio.to_thread(download_random_file, "Videos")
+    await asyncio.to_thread(save_downloaded_file, media, "videos")
     return await asyncio.to_thread(
         gmail.gmail_send_email,
         "PA Jarvis: Random video",

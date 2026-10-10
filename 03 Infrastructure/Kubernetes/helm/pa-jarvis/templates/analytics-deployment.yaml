@@ -16,9 +16,15 @@ spec:
         - name: analytics
           image: "{{ .Values.analytics.image.repository }}:{{ .Values.analytics.image.tag }}"
           imagePullPolicy: {{ .Values.analytics.image.pullPolicy }}
+          env:
+            - name: AK_DATA_DIR
+              value: "/app/data"
           envFrom:
             - secretRef:
                 name: storage-db-secrets
+          volumeMounts:
+            - name: shared-data
+              mountPath: /app/data
           ports:
             - containerPort: 8006
           readinessProbe:
@@ -27,3 +33,8 @@ spec:
               port: 8006
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        - name: shared-data
+          hostPath:
+            path: {{ required "sharedData.hostPath must be configured" .Values.sharedData.hostPath | quote }}
+            type: DirectoryOrCreate

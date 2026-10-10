@@ -1,19 +1,41 @@
 from contextlib import asynccontextmanager
 from datetime import datetime
+import mimetypes
+import os
 from pathlib import Path
 from typing import Any
 
 import asyncpg
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.postgres import create_pool, get_high_priority_items
+from app.postgres import create_pool, get_calendar_events, get_high_priority_items
 
 
 APP_DIR = Path(__file__).resolve().parent
+DATA_DIR = Path(os.getenv("AK_DATA_DIR", "/app/data"))
 templates = Jinja2Templates(directory=APP_DIR / "templates")
+
+
+def _available_pictures() -> list[Path]:
+    """Return locally saved image files ordered from newest to oldest."""
+    pics_dir = DATA_DIR / "pics"
+    if not pics_dir.is_dir():
+        return []
+
+    pictures = [
+        path
+        for path in pics_dir.iterdir()
+        if path.is_file()
+        and (mimetypes.guess_type(path.name)[0] or "").startswith("image/")
+    ]
+    return sorted(
+        pictures,
+        key=lambda path: (path.stat().st_mtime, path.name),
+        reverse=True,
+    )
 
 
 @asynccontextmanager
@@ -69,6 +91,60 @@ async def tv_page(request: Request) -> HTMLResponse:
         request=request,
         name="tv.html",
         context={},
+    )
+
+
+@app.get("/api/calendar-events")
+async def calendar_events(request: Request) -> dict[str, list[dict[str, object]]]:
+    """Return synchronized Google Calendar events for the TV dashboard."""
+    events = await get_calendar_events(request.app.state.postgres_pool)
+    return {
+        "events": [
+            {
+                "id": event["google_event_id"],
+                "title": event["event_name"],
+                "description": event["event_description"],
+                "start": event["start_at"].isoformat(),
+                "end": event["end_at"].isoformat(),
+                "allDay": event["is_all_day"],
+            }
+            for event in events
+        ]
+    }
+
+
+@app.get("/media/pics/latest", response_class=FileResponse)
+async def latest_picture() -> FileResponse:
+    """Return the most recently saved picture from the shared data volume."""
+    pictures = _available_pictures()
+    if not pictures:
+        raise HTTPException(status_code=404, detail="No saved pictures are available.")
+
+    return FileResponse(
+        pictures[0],
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@app.get("/media/pics")
+async def list_pictures() -> dict[str, list[str]]:
+    """Return opaque URLs for every locally saved picture."""
+    pictures = _available_pictures()
+    return {
+        "pictures": [f"/media/pics/{index}" for index in range(len(pictures))]
+    }
+
+
+@app.get("/media/pics/{picture_index}", response_class=FileResponse)
+async def indexed_picture(picture_index: int) -> FileResponse:
+    """Return one picture by its position in the newest-first inventory."""
+    pictures = _available_pictures()
+    if picture_index < 0 or picture_index >= len(pictures):
+        raise HTTPException(status_code=404, detail="Picture was not found.")
+
+    return FileResponse(
+        pictures[picture_index],
+        headers={"Cache-Control": "no-store"},
     )
 
 
