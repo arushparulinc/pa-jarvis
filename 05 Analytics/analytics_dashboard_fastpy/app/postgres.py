@@ -55,3 +55,22 @@ async def get_high_priority_items(
         )
 
     return [dict(row) for row in task_rows], [dict(row) for row in shopping_rows]
+
+
+async def get_calendar_events(pool: asyncpg.Pool) -> list[dict[str, Any]]:
+    """Return the locally synchronized Google Calendar events."""
+    async with pool.acquire() as connection:
+        rows = await connection.fetch(
+            """
+            SELECT
+                google_event_id,
+                event_name,
+                event_description,
+                start_at,
+                end_at,
+                is_all_day
+            FROM toolsdata.google_calendar_events
+            ORDER BY start_at, end_at, event_name
+            """
+        )
+    return [dict(row) for row in rows]

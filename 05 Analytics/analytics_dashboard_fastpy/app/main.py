@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.postgres import create_pool, get_high_priority_items
+from app.postgres import create_pool, get_calendar_events, get_high_priority_items
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -92,6 +92,25 @@ async def tv_page(request: Request) -> HTMLResponse:
         name="tv.html",
         context={},
     )
+
+
+@app.get("/api/calendar-events")
+async def calendar_events(request: Request) -> dict[str, list[dict[str, object]]]:
+    """Return synchronized Google Calendar events for the TV dashboard."""
+    events = await get_calendar_events(request.app.state.postgres_pool)
+    return {
+        "events": [
+            {
+                "id": event["google_event_id"],
+                "title": event["event_name"],
+                "description": event["event_description"],
+                "start": event["start_at"].isoformat(),
+                "end": event["end_at"].isoformat(),
+                "allDay": event["is_all_day"],
+            }
+            for event in events
+        ]
+    }
 
 
 @app.get("/media/pics/latest", response_class=FileResponse)
