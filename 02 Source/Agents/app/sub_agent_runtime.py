@@ -19,9 +19,7 @@ async def run_sub_agent(
     chat_history: list[dict[str, object]] = [
         {"role": "user", "content": agent_instructions}
     ]
-    provider = "gemini"
-    provider_tool_round = 0
-    gemini_error: Exception | None = None
+    tool_round = 0
 
     while True:
         try:
@@ -35,7 +33,6 @@ async def run_sub_agent(
             )
             assistant_reply, tool_calls = await call_llm.invoke_llm(
                 request_id,
-                provider,
                 chat_history,
                 calling_agent,
             )
@@ -43,19 +40,19 @@ async def run_sub_agent(
             if not tool_calls:
                 if not assistant_reply:
                     raise call_llm.LLMServiceError(
-                        f"{provider.title()} returned no final text response."
+                        "The configured providers returned no final text response."
                     )
                 chat_history.append(
                     {"role": "assistant", "content": assistant_reply}
                 )
                 return assistant_reply
 
-            if provider_tool_round == MAX_TOOL_ROUNDS:
+            if tool_round == MAX_TOOL_ROUNDS:
                 raise call_llm.LLMServiceError(
                     f"{calling_agent} exceeded the limit of "
                     f"{MAX_TOOL_ROUNDS} tool rounds."
                 )
-            provider_tool_round += 1
+            tool_round += 1
 
             chat_history.append(
                 {
@@ -97,14 +94,7 @@ async def run_sub_agent(
                 )
 
         except call_llm.LLMServiceError as llm_error:
-            if provider == "gemini":
-                gemini_error = llm_error
-                provider = "qwen"
-                provider_tool_round = 0
-                continue
-
             raise SubAgentError(
                 f"{calling_agent} could not generate a response. "
-                f"Primary provider error: {gemini_error}. "
-                f"Fallback provider error: {llm_error}"
+                f"Provider error: {llm_error}"
             ) from llm_error

@@ -29,7 +29,7 @@ if not any(
     )
     master_agent_logger.addHandler(master_agent_log_handler)
 
-# Keep one provider-neutral history shared by Qwen and Gemini. It contains
+# Keep one provider-neutral history shared by every configured provider. It contains
 # user messages, assistant answers, tool requests, and tool results so either
 # provider can continue the complete conversation.
 chat_history: list[dict[str, object]] = []
@@ -56,7 +56,7 @@ def _append_chat_history(message: dict[str, object]) -> None:
 
 
 async def route_chat_message(request_id: str, message: str) -> str:
-    """Manage tool rounds through Gemini first, then fall back to Qwen."""
+    """Manage provider-neutral chat history and tool-execution rounds."""
     # Serialize complete turns so every provider sees a consistent shared
     # history while it is being updated by LLM and tool responses.
     async with chat_history_lock:
@@ -65,51 +65,28 @@ async def route_chat_message(request_id: str, message: str) -> str:
         previous_history = list(chat_history)
         _append_chat_history({"role": "user", "content": message})
 
-        provider = "gemini"
-        provider_tool_round = 0
-        gemini_error: Exception | None = None
+        tool_round = 0
 
         while True:
             try:
-                if provider == "qwen":
-                    await log_service_event_pgsql(
-                        request_id=request_id,
-                        chat_message=message,
-                        service_name="agents",
-                        script_name="master_router_agent.py",
-                        event_type="call_llm_wrapper",
-                        chat_history=chat_history,
-                    )
-                    assistant_reply, tool_calls = (
-                        await call_llm.invoke_llm(
-                            request_id,
-                            "qwen",
-                            chat_history,
-                            "Master Router Agent",
-                        )
-                    )
-                else:
-                    await log_service_event_pgsql(
-                        request_id=request_id,
-                        chat_message=message,
-                        service_name="agents",
-                        script_name="master_router_agent.py",
-                        event_type="call_llm_wrapper",
-                        chat_history=chat_history,
-                    )
-                    assistant_reply, tool_calls = (
-                        await call_llm.invoke_llm(
-                            request_id,
-                            "gemini",
-                            chat_history,
-                            "Master Router Agent",
-                        )
-                    )
+                await log_service_event_pgsql(
+                    request_id=request_id,
+                    chat_message=message,
+                    service_name="agents",
+                    script_name="master_router_agent.py",
+                    event_type="call_llm_wrapper",
+                    chat_history=chat_history,
+                )
+                assistant_reply, tool_calls = await call_llm.invoke_llm(
+                    request_id,
+                    chat_history,
+                    "Master Router Agent",
+                )
 
                 if not tool_calls:
                     if not assistant_reply:
                         error_message = (
-                            f"{provider.title()} returned no final text response."
+                            "The configured providers returned no final text response."
                         )
                         raise call_llm.LLMServiceError(error_message)
 
@@ -122,13 +99,13 @@ async def route_chat_message(request_id: str, message: str) -> str:
                     )
                     break
 
-                if provider_tool_round == MAX_TOOL_ROUNDS:
+                if tool_round == MAX_TOOL_ROUNDS:
                     error_message = (
-                        f"{provider.title()} exceeded the limit of "
-                        f"{MAX_TOOL_ROUNDS} tool rounds."
+                        f"The request exceeded the limit of {MAX_TOOL_ROUNDS} "
+                        "tool rounds."
                     )
                     raise call_llm.LLMServiceError(error_message)
-                provider_tool_round += 1
+                tool_round += 1
 
                 # Store the normalized LLM tool request once, regardless of
                 # which provider requested it.
@@ -193,20 +170,11 @@ async def route_chat_message(request_id: str, message: str) -> str:
                     )
 
             except call_llm.LLMServiceError as llm_error:
-                if provider == "gemini":
-                    # Preserve context and retry through the Qwen provider.
-                    gemini_error = llm_error
-                    provider = "qwen"
-                    provider_tool_round = 0
-                    continue
-
-                # Neither provider completed this turn. Restore the history
-                # from before the current user message was added.
+                # No configured provider completed this turn. Provider errors
+                # remain outside chat history, which is restored atomically.
                 chat_history[:] = previous_history
                 raise ChatError(
-                    "No chat provider could generate a response. "
-                    f"Primary provider error: {gemini_error}. "
-                    f"Fallback provider error: {llm_error}"
+                    f"No chat provider could generate a response: {llm_error}"
                 ) from llm_error
 
         master_agent_logger.info(
