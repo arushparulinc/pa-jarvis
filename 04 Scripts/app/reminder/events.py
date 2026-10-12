@@ -144,16 +144,26 @@ async def run() -> dict[str, object]:
     calendar_id = os.getenv("GOOGLE_CALENDAR_ID", DEFAULT_CALENDAR_ID).strip()
     start = datetime.now(UTC)
     end = start + timedelta(days=7)
+
+    print(
+        f"Downloading calendar events from {start.isoformat()} to {end.isoformat()}...",
+        flush=True,
+    )
     events = await asyncio.to_thread(
         _list_upcoming_events,
         calendar_id,
         start,
         end,
     )
+    print(f"Downloaded {len(events)} calendar event(s).", flush=True)
+
+    print("Preparing calendar events for PostgreSQL...", flush=True)
     records = [_event_record(event) for event in events]
 
+    print("Connecting to PostgreSQL...", flush=True)
     connection = await _connect_postgres()
     try:
+        print("Replacing the cached calendar events...", flush=True)
         async with connection.transaction():
             await connection.execute("DELETE FROM toolsdata.google_calendar_events")
             if records:
@@ -170,8 +180,10 @@ async def run() -> dict[str, object]:
                     """,
                     records,
                 )
+        print(f"Cached {len(records)} calendar event(s) successfully.", flush=True)
     finally:
         await connection.close()
+        print("PostgreSQL connection closed.", flush=True)
 
     return {
         "status": "synchronized",

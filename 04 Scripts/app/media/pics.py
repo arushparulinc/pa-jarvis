@@ -45,10 +45,17 @@ def delete_oldest_saved_file(
     failure_event_type="Failed",
 )
 async def run() -> dict[str, object]:
+    print("Downloading a random picture from Google Drive...", flush=True)
     media = await asyncio.to_thread(
         download_random_image_from_random_subfolder,
         "Pics",
     )
+    print(
+        f"Downloaded {media['file_name']} from {media['source_folder_name']}.",
+        flush=True,
+    )
+
+    print("Emailing the downloaded picture...", flush=True)
     email_result = await asyncio.to_thread(
         gmail.gmail_send_email,
         "PA Jarvis: Random photo",
@@ -60,12 +67,23 @@ async def run() -> dict[str, object]:
         attachment_content=media["content"],
         attachment_mime_type=media["mime_type"],
     )
+    print("Picture email sent successfully.", flush=True)
+
+    print("Saving the picture locally...", flush=True)
     saved_path = await asyncio.to_thread(save_downloaded_file, media, "pics")
+    print(f"Picture saved to {saved_path}.", flush=True)
+
+    print("Removing the oldest previously saved picture...", flush=True)
     deleted_path = await asyncio.to_thread(
         delete_oldest_saved_file,
         saved_path.parent,
         exclude=saved_path,
     )
+    if deleted_path:
+        print(f"Deleted {deleted_path}.", flush=True)
+    else:
+        print("No older picture was available to delete.", flush=True)
+
     return {
         "email": email_result,
         "saved_file": str(saved_path),
