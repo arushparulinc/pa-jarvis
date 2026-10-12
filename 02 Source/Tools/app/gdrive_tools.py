@@ -12,7 +12,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT.parent / ".env")
 
 GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
 FOLDER_MATCH_CUTOFF = 0.65
@@ -23,9 +23,9 @@ class GoogleDriveError(RuntimeError):
 
 
 def _get_root_folder_id() -> str:
-    root_folder_id = os.getenv("GDRIVE_ROOT_FOLDER_ID", "").strip()
+    root_folder_id = os.getenv("AK_GDRIVE_ROOT_FOLDER_ID", "").strip()
     if not root_folder_id:
-        raise GoogleDriveError("GDRIVE_ROOT_FOLDER_ID is not configured.")
+        raise GoogleDriveError("AK_GDRIVE_ROOT_FOLDER_ID is not configured.")
     return root_folder_id
 
 

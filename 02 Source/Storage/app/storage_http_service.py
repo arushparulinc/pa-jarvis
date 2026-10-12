@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT.parent / ".env")
 
 from .call_pgsql_db import (
     check_postgres_health,

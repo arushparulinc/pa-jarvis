@@ -29,8 +29,8 @@ docker compose -f "02 Source/Storage/compose.storage.yaml" up -d
 docker compose -f "04 Scripts/compose.scripts.yaml" up --build
 ```
 
-The Scripts service loads only `04 Scripts/.env`. Its Google integrations use
-OAuth credentials from that service-owned environment file.
+All services load their environment variables from the master file at
+`02 Source/.env`.
 
 ## Analytics only
 

@@ -1,9 +1,10 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 import psycopg
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 conn = psycopg.connect(
     host=os.getenv("DB_HOST"),

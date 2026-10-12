@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT.parent / ".env")
 
 from . import tool_execution
 from .call_storage import log_service_event_pgsql

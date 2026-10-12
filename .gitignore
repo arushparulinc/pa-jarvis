@@ -5,7 +5,6 @@
 **/.env.*
 !.env.example
 !**/.env.example
-02 Source/LLM/.env
 
 # Python
 __pycache__/
