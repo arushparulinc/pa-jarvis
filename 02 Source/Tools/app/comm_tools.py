@@ -47,16 +47,16 @@ def gmail_send_email(
     if not body.strip():
         raise GmailError("The email body is required.")
 
-    client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
-    client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "").strip()
-    refresh_token = os.getenv("GOOGLE_REFRESH_TOKEN", "").strip()
+    client_id = os.getenv("AK_GOOGLE_CLIENT_ID", "").strip()
+    client_secret = os.getenv("AK_GOOGLE_CLIENT_SECRET", "").strip()
+    refresh_token = os.getenv("AK_GOOGLE_REFRESH_TOKEN", "").strip()
 
     missing_secrets = [
         name
         for name, value in (
-            ("GOOGLE_CLIENT_ID", client_id),
-            ("GOOGLE_CLIENT_SECRET", client_secret),
-            ("GOOGLE_REFRESH_TOKEN", refresh_token),
+            ("AK_GOOGLE_CLIENT_ID", client_id),
+            ("AK_GOOGLE_CLIENT_SECRET", client_secret),
+            ("AK_GOOGLE_REFRESH_TOKEN", refresh_token),
         )
         if not value
     ]

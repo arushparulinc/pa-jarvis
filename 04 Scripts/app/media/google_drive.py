@@ -42,31 +42,6 @@ def save_downloaded_file(media: dict[str, object], subdirectory: str) -> Path:
     return destination
 
 
-def delete_oldest_saved_file(
-    subdirectory: str,
-    *,
-    exclude: Path | None = None,
-) -> Path | None:
-    """Delete the oldest saved file, preserving an optional newly saved file."""
-    destination_dir = _data_subdirectory(subdirectory)
-    if not destination_dir.is_dir():
-        return None
-
-    excluded_path = exclude.resolve() if exclude is not None else None
-    candidates = [
-        path
-        for path in destination_dir.iterdir()
-        if path.is_file()
-        and (excluded_path is None or path.resolve() != excluded_path)
-    ]
-    if not candidates:
-        return None
-
-    oldest = min(candidates, key=lambda path: (path.stat().st_mtime_ns, path.name))
-    oldest.unlink()
-    return oldest
-
-
 def _escape_query_value(value: str) -> str:
     return value.replace("\\", "\\\\").replace("'", "\\'")
 
@@ -176,9 +151,9 @@ def download_random_image_from_random_subfolder(
     folder_name: str,
 ) -> dict[str, object]:
     """Download a random image from a random immediate child folder."""
-    root_folder_id = os.getenv("AK_GDRIVE_ROOT_FOLDER", "").strip()
+    root_folder_id = os.getenv("GDRIVE_ROOT_FOLDER_ID", "").strip()
     if not root_folder_id:
-        raise AKGoogleDriveError("AK_GDRIVE_ROOT_FOLDER is not configured.")
+        raise AKGoogleDriveError("GDRIVE_ROOT_FOLDER_ID is not configured.")
 
     try:
         service = _get_drive_service()
@@ -215,9 +190,9 @@ def download_random_image_from_random_subfolder(
 
 def download_random_file(folder_name: str) -> dict[str, object]:
     """Download one random non-folder file from a named root-level folder."""
-    root_folder_id = os.getenv("AK_GDRIVE_ROOT_FOLDER", "").strip()
+    root_folder_id = os.getenv("GDRIVE_ROOT_FOLDER_ID", "").strip()
     if not root_folder_id:
-        raise AKGoogleDriveError("AK_GDRIVE_ROOT_FOLDER is not configured.")
+        raise AKGoogleDriveError("GDRIVE_ROOT_FOLDER_ID is not configured.")
 
     try:
         service = _get_drive_service()

@@ -61,9 +61,6 @@ services:
       - ./Tools/.env
     environment:
       STORAGE_SERVICE_URL: http://storage:8004
-      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/service-account.json
-    volumes:
-      - ./Tools/credentials/service-account.json:/app/secrets/service-account.json:ro
     depends_on:
       - storage
 
@@ -81,15 +78,9 @@ services:
     ports:
       - "8005:8005"
     env_file:
-      - ./Storage/.env
-      - ./Tools/.env
-    environment:
-      AK_GOOGLE_APPLICATION_CREDENTIALS: /app/ak-secrets/service-account.json
-      AK_GDRIVE_ROOT_FOLDER: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
-      GDRIVE_ROOT_FOLDER_ID: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
-      STORAGE_SERVICE_URL: http://storage:8004
+      - ../04 Scripts/.env
     volumes:
-      - ./Tools/credentials/service-account.json:/app/ak-secrets/service-account.json:ro
+      - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
     depends_on:
       - storage
 

@@ -48,7 +48,13 @@ async def log_script_event(
         response.raise_for_status()
 
 
-def log_script_execution(script_name: str):
+def log_script_execution(
+    script_name: str,
+    *,
+    success_event_name: str = "Execution completed",
+    success_event_type: str = "Success",
+    failure_event_type: str = "Failed",
+):
     """Record the outcome of every invocation of a scheduled script."""
     def decorator(function: Callable[..., Any]):
         @wraps(function)
@@ -57,17 +63,17 @@ def log_script_execution(script_name: str):
                 result = function(*args, **kwargs)
                 if inspect.isawaitable(result):
                     result = await result
-            except Exception:
+            except Exception as exc:
                 await log_script_event(
-                    event_name="Execution failed",
-                    event_type="Failed",
+                    event_name=(str(exc) or exc.__class__.__name__)[:100],
+                    event_type=failure_event_type,
                     script_name=script_name,
                 )
                 raise
 
             await log_script_event(
-                event_name="Execution completed",
-                event_type="Success",
+                event_name=success_event_name,
+                event_type=success_event_type,
                 script_name=script_name,
             )
             return result
