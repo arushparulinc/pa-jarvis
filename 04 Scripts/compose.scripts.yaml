@@ -16,7 +16,7 @@ services:
       GDRIVE_ROOT_FOLDER_ID: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
       STORAGE_SERVICE_URL: http://storage:8004
     volumes:
-      - /apinc/data:/apinc/data
+      - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
       - ../02 Source/Tools/credentials/service-account.json:/app/ak-secrets/service-account.json:ro
     networks:
       - pa-jarvis
