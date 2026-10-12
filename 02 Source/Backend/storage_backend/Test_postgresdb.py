@@ -7,11 +7,11 @@ import psycopg
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 conn = psycopg.connect(
-    host=os.getenv("DB_HOST"),
-    port=os.getenv("DB_PORT"),
-    dbname=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
+    host=os.getenv("PGSQL_HOSTNAME"),
+    port=os.getenv("PGSQL_PORT", "5432"),
+    dbname=os.getenv("PGSQL_DBNAME"),
+    user=os.getenv("PGSQL_USER"),
+    password=os.getenv("PGSQL_PASSWORD"),
 )
 
 print("✅ Connected!")
