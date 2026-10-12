@@ -125,7 +125,6 @@ def _event_record(event: dict[str, object]) -> tuple[object, ...]:
     start_at, is_all_day = _event_datetime(event.get("start", {}))
     end_at, _ = _event_datetime(event.get("end", {}))
     return (
-        str(event["id"]),
         str(event.get("summary") or "(No title)"),
         str(event.get("description") or "") or None,
         start_at,
@@ -134,7 +133,12 @@ def _event_record(event: dict[str, object]) -> tuple[object, ...]:
     )
 
 
-@log_script_execution("reminder.events")
+@log_script_execution(
+    "reminder.events",
+    success_event_name="Calendar events downloaded and cached",
+    success_event_type="Success",
+    failure_event_type="Failed",
+)
 async def run() -> dict[str, object]:
     """Replace the PostgreSQL calendar cache with events from the next seven days."""
     calendar_id = os.getenv("GOOGLE_CALENDAR_ID", DEFAULT_CALENDAR_ID).strip()
@@ -156,14 +160,13 @@ async def run() -> dict[str, object]:
                 await connection.executemany(
                     """
                     INSERT INTO toolsdata.google_calendar_events (
-                        google_event_id,
                         event_name,
                         event_description,
                         start_at,
                         end_at,
                         is_all_day
                     )
-                    VALUES ($1, $2, $3, $4, $5, $6)
+                    VALUES ($1, $2, $3, $4, $5)
                     """,
                     records,
                 )
