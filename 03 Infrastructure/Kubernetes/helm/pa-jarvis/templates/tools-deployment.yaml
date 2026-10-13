@@ -23,6 +23,8 @@ spec:
           env:
             - name: STORAGE_SERVICE_URL
               value: "http://storage:8004"
+            - name: SCRIPTS_SERVICE_URL
+              value: "http://scripts:8005"
 
           envFrom:
             - secretRef:

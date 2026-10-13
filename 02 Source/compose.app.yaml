@@ -61,8 +61,10 @@ services:
       - ./.env
     environment:
       STORAGE_SERVICE_URL: http://storage:8004
+      SCRIPTS_SERVICE_URL: http://scripts:8005
     depends_on:
       - storage
+      - scripts
 
   storage:
     build:
