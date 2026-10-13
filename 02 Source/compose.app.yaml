@@ -61,8 +61,10 @@ services:
       - ./.env
     environment:
       STORAGE_SERVICE_URL: http://storage:8004
+      SCRIPTS_SERVICE_URL: http://scripts:8005
     depends_on:
       - storage
+      - scripts
 
   storage:
     build:
@@ -79,6 +81,8 @@ services:
       - "8005:8005"
     env_file:
       - ./.env
+    environment:
+      AK_DATA_DIR: /apinc/data
     volumes:
       - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
     depends_on:
@@ -91,6 +95,10 @@ services:
       - "8006:8006"
     env_file:
       - ./.env
+    environment:
+      AK_DATA_DIR: /apinc/data
+    volumes:
+      - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
     depends_on:
       - storage
 

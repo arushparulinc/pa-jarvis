@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import httpx
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -17,10 +18,27 @@ load_dotenv(PROJECT_ROOT.parent / ".env")
 
 CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar"]
 DEFAULT_TIME_ZONE = "America/Toronto"
+SCRIPTS_SERVICE_URL = os.getenv(
+    "SCRIPTS_SERVICE_URL", "http://scripts:8005"
+).rstrip("/")
+CALENDAR_SYNC_TIMEOUT_SECONDS = 60.0
 
 
 class PlannerError(RuntimeError):
     """Raised when a planner operation cannot be completed."""
+
+
+async def _sync_calendar_cache() -> dict[str, object]:
+    """Ask the Scripts service to refresh its cached calendar events."""
+    try:
+        async with httpx.AsyncClient(timeout=CALENDAR_SYNC_TIMEOUT_SECONDS) as client:
+            response = await client.post(
+                f"{SCRIPTS_SERVICE_URL}/reminders/events/sync"
+            )
+            response.raise_for_status()
+        return {"status": "synchronized", "result": response.json()}
+    except (httpx.HTTPError, ValueError) as exc:
+        return {"status": "failed", "error": str(exc)}
 
 
 async def _connect_postgres() -> asyncpg.Connection:
@@ -136,7 +154,9 @@ async def add_calendar_event(
         except HttpError as exc:
             raise PlannerError(f"Could not create calendar event: {exc}") from exc
 
-    return await asyncio.to_thread(create_event)
+    created_event = await asyncio.to_thread(create_event)
+    cache_sync = await _sync_calendar_cache()
+    return {"event": created_event, "calendar_cache_sync": cache_sync}
 
 
 async def read_calendar_event(

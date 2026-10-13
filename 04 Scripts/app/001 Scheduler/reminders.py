@@ -1,7 +1,6 @@
 """Schedules for individual reminder scripts."""
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-import asyncpg
 
 from ..call_storage import log_scheduler_event
 from ..reminder import events, shopping, tasks
@@ -12,9 +11,9 @@ SCRIPT_FUNCTIONS = {"events": events.run, "shopping": shopping.run, "tasks": tas
 SCRIPT_SCHEDULES: dict[int, dict[str, object]] = {}
 
 
-async def register_jobs(scheduler: AsyncIOScheduler, connection: asyncpg.Connection) -> None:
+async def register_jobs(scheduler: AsyncIOScheduler) -> None:
     SCRIPT_SCHEDULES.clear()
-    SCRIPT_SCHEDULES.update(await load_schedules(connection, ["reminder", "reminders"], SCRIPT_FUNCTIONS))
+    SCRIPT_SCHEDULES.update(await load_schedules(["reminder", "reminders"], SCRIPT_FUNCTIONS))
     for schedule_id, schedule in SCRIPT_SCHEDULES.items():
         scheduler.add_job(
             schedule["func"],
