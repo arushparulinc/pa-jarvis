@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT.parent / ".env")
 
 from .master_router_agent import ChatError, route_chat_message
 from .call_storage import log_service_event_pgsql

@@ -15,7 +15,7 @@ class SystemInstructionError(RuntimeError):
 SYSTEM_INSTRUCTIONS_FILE = (
     Path(__file__).resolve().parents[1] / "system_instructions.txt"
 )
-load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 
 async def refresh_system_instructions() -> None:
