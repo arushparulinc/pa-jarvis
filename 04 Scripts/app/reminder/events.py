@@ -15,7 +15,6 @@ from ..call_storage import log_script_execution
 
 # Match planner_tools so the existing OAuth refresh token can be reused.
 CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar"]
-DEFAULT_CALENDAR_ID = "primary"
 DEFAULT_TIME_ZONE = "America/Toronto"
 
 
@@ -63,7 +62,6 @@ def _get_calendar_service():
 
 
 def _list_upcoming_events(
-    calendar_id: str,
     start: datetime,
     end: datetime,
 ) -> list[dict[str, object]]:
@@ -74,7 +72,7 @@ def _list_upcoming_events(
     try:
         while True:
             response = service.events().list(
-                calendarId=calendar_id,
+                calendarId="primary",
                 timeMin=start.isoformat().replace("+00:00", "Z"),
                 timeMax=end.isoformat().replace("+00:00", "Z"),
                 singleEvents=True,
@@ -141,7 +139,6 @@ def _event_record(event: dict[str, object]) -> tuple[object, ...]:
 )
 async def run() -> dict[str, object]:
     """Replace the PostgreSQL calendar cache with events from the next seven days."""
-    calendar_id = os.getenv("GOOGLE_CALENDAR_ID", DEFAULT_CALENDAR_ID).strip()
     start = datetime.now(UTC)
     end = start + timedelta(days=7)
 
@@ -151,7 +148,6 @@ async def run() -> dict[str, object]:
     )
     events = await asyncio.to_thread(
         _list_upcoming_events,
-        calendar_id,
         start,
         end,
     )
@@ -187,7 +183,7 @@ async def run() -> dict[str, object]:
 
     return {
         "status": "synchronized",
-        "calendar_id": calendar_id,
+        "calendar_id": "primary",
         "event_count": len(records),
         "range_start": start.isoformat(),
         "range_end": end.isoformat(),
