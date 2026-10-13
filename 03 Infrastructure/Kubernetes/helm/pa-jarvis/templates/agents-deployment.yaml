@@ -34,3 +34,18 @@ spec:
               value: "http://tools:8003"
             - name: STORAGE_SERVICE_URL
               value: "http://storage:8004"
+            - name: PRIMARY_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: llm-secrets
+                  key: PRIMARY_PROVIDER
+            - name: SECONDARY_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: llm-secrets
+                  key: SECONDARY_PROVIDER
+            - name: DEFAULT_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: llm-secrets
+                  key: DEFAULT_PROVIDER

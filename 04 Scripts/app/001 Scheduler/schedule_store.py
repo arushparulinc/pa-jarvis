@@ -1,24 +1,15 @@
-"""Load and validate script schedules from PostgreSQL."""
+"""Load and validate script schedules through the Storage service."""
 
 from collections.abc import Callable, Sequence
 
-import asyncpg
+from ..call_storage import get_script_schedules
 
 
 async def load_schedules(
-    connection: asyncpg.Connection,
     sched_types: Sequence[str],
     scripts: dict[str, Callable[[], object]],
 ) -> dict[int, dict[str, object]]:
-    rows = await connection.fetch(
-        """
-        SELECT sched_id, sched_name, sched_day_of_week, sched_hour, sched_minute
-        FROM config.script_schedules
-        WHERE sched_type = ANY($1::varchar[])
-        ORDER BY sched_id
-        """,
-        list(sched_types),
-    )
+    rows = await get_script_schedules(list(sched_types))
 
     schedules: dict[int, dict[str, object]] = {}
     for row in rows:

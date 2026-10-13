@@ -8,11 +8,13 @@ from pydantic import BaseModel, Field
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT.parent / ".env")
 
 from . import (
     gemini_chat,
     gemini_client,
+    groq_chat,
+    groq_client,
     qwen_chat,
     qwen_client,
     system_instructions,
@@ -23,14 +25,14 @@ from .call_storage import log_service_event_pgsql
 
 app = FastAPI(
     title="PA Jarvis LLM Service",
-    description="Provider-neutral HTTP service for Qwen and Gemini.",
+    description="Provider-neutral HTTP service for Qwen, Gemini, and Groq.",
     version="0.1.0",
 )
 
 
 class LLMInvokeRequest(BaseModel):
     request_id: UUID = Field(alias="RequestID")
-    provider: Literal["qwen", "gemini"]
+    provider: Literal["qwen", "gemini", "groq"]
     shared_history: list[dict[str, object]]
     calling_agent: str = Field(min_length=1, max_length=100)
 
@@ -92,8 +94,14 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
                 request.shared_history,
                 request.calling_agent,
             )
-        else:
+        elif request.provider == "gemini":
             reply, tool_calls = await gemini_chat.route_chat_message_gemini(
+                str(request.request_id),
+                request.shared_history,
+                request.calling_agent,
+            )
+        else:
+            reply, tool_calls = await groq_chat.route_chat_message_groq(
                 str(request.request_id),
                 request.shared_history,
                 request.calling_agent,
@@ -101,6 +109,7 @@ async def invoke(request: LLMInvokeRequest) -> LLMInvokeResponse:
     except (
         qwen_client.QwenError,
         gemini_client.GeminiError,
+        groq_client.GroqError,
         system_instructions.SystemInstructionError,
         tools_registry.ToolsRegistryError,
     ) as exc:

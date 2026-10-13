@@ -10,18 +10,35 @@ from dotenv import load_dotenv
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import httpx
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT.parent / ".env")
 
 CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar"]
-DEFAULT_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary").strip()
 DEFAULT_TIME_ZONE = "America/Toronto"
+SCRIPTS_SERVICE_URL = os.getenv(
+    "SCRIPTS_SERVICE_URL", "http://scripts:8005"
+).rstrip("/")
+CALENDAR_SYNC_TIMEOUT_SECONDS = 60.0
 
 
 class PlannerError(RuntimeError):
     """Raised when a planner operation cannot be completed."""
+
+
+async def _sync_calendar_cache() -> dict[str, object]:
+    """Ask the Scripts service to refresh its cached calendar events."""
+    try:
+        async with httpx.AsyncClient(timeout=CALENDAR_SYNC_TIMEOUT_SECONDS) as client:
+            response = await client.post(
+                f"{SCRIPTS_SERVICE_URL}/reminders/events/sync"
+            )
+            response.raise_for_status()
+        return {"status": "synchronized", "result": response.json()}
+    except (httpx.HTTPError, ValueError) as exc:
+        return {"status": "failed", "error": str(exc)}
 
 
 async def _connect_postgres() -> asyncpg.Connection:
@@ -38,16 +55,16 @@ async def _connect_postgres() -> asyncpg.Connection:
 
 
 def _get_calendar_service():
-    client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
-    client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "").strip()
-    refresh_token = os.getenv("GOOGLE_REFRESH_TOKEN", "").strip()
+    client_id = os.getenv("AK_GOOGLE_CLIENT_ID", "").strip()
+    client_secret = os.getenv("AK_GOOGLE_CLIENT_SECRET", "").strip()
+    refresh_token = os.getenv("AK_GOOGLE_REFRESH_TOKEN", "").strip()
 
     missing_secrets = [
         name
         for name, value in (
-            ("GOOGLE_CLIENT_ID", client_id),
-            ("GOOGLE_CLIENT_SECRET", client_secret),
-            ("GOOGLE_REFRESH_TOKEN", refresh_token),
+            ("AK_GOOGLE_CLIENT_ID", client_id),
+            ("AK_GOOGLE_CLIENT_SECRET", client_secret),
+            ("AK_GOOGLE_REFRESH_TOKEN", refresh_token),
         )
         if not value
     ]
@@ -86,7 +103,6 @@ async def add_calendar_event(
     event_description: str = "",
     event_priority: str = "",
     time_zone: str = DEFAULT_TIME_ZONE,
-    calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> dict[str, object]:
     """Create an event, deriving its end from the start and duration."""
     try:
@@ -132,24 +148,25 @@ async def add_calendar_event(
     def create_event() -> dict[str, object]:
         try:
             return _get_calendar_service().events().insert(
-                calendarId=calendar_id,
+                calendarId="primary",
                 body=event_body,
             ).execute()
         except HttpError as exc:
             raise PlannerError(f"Could not create calendar event: {exc}") from exc
 
-    return await asyncio.to_thread(create_event)
+    created_event = await asyncio.to_thread(create_event)
+    cache_sync = await _sync_calendar_cache()
+    return {"event": created_event, "calendar_cache_sync": cache_sync}
 
 
 async def read_calendar_event(
     event_id: str,
-    calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> dict[str, object]:
     """Read one Google Calendar event by ID."""
     def read_event() -> dict[str, object]:
         try:
             return _get_calendar_service().events().get(
-                calendarId=calendar_id,
+                calendarId="primary",
                 eventId=event_id,
             ).execute()
         except HttpError as exc:
@@ -162,12 +179,11 @@ async def list_calendar_events(
     time_min: str = "",
     time_max: str = "",
     max_results: int = 100,
-    calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> list[dict[str, object]]:
     """List calendar events, optionally bounded by RFC 3339 timestamps."""
     def list_events() -> list[dict[str, object]]:
         query: dict[str, object] = {
-            "calendarId": calendar_id,
+            "calendarId": "primary",
             "singleEvents": True,
             "orderBy": "startTime",
             "maxResults": max_results,
@@ -188,13 +204,12 @@ async def list_calendar_events(
 
 async def delete_calendar_event(
     event_id: str,
-    calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> dict[str, object]:
     """Delete one Google Calendar event by ID."""
     def delete_event() -> None:
         try:
             _get_calendar_service().events().delete(
-                calendarId=calendar_id,
+                calendarId="primary",
                 eventId=event_id,
             ).execute()
         except HttpError as exc:

@@ -8,10 +8,11 @@ from pydantic import BaseModel, Field
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT.parent / ".env")
 
 from .call_pgsql_db import (
     check_postgres_health,
+    get_script_schedules_pgsql,
     log_scheduler_event_pgsql,
     log_script_event_pgsql,
     log_service_event_pgsql,
@@ -66,6 +67,10 @@ class LogSchedulerEventRequest(BaseModel):
     event_name: str = Field(min_length=1, max_length=100)
     event_type: str = Field(min_length=1, max_length=100)
     scheduler_name: str = Field(min_length=1, max_length=200)
+
+
+class ScriptSchedulesRequest(BaseModel):
+    sched_types: list[str] = Field(min_length=1)
 
 
 @app.get("/", tags=["General"])
@@ -140,6 +145,16 @@ async def log_scheduler_event(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     return LogEventResponse(logged=True)
+
+
+@app.post("/script-schedules", tags=["Storage"])
+async def get_script_schedules(
+    request: ScriptSchedulesRequest,
+) -> list[dict[str, object]]:
+    try:
+        return await get_script_schedules_pgsql(request.sched_types)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/log-llm-call", response_model=LogEventResponse, tags=["Storage"])

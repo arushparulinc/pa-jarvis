@@ -15,7 +15,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./Backend/agent_router_fastpy/.env
+      - ./.env
     environment:
       MASTER_AGENT_URL: http://agents:8001
       STORAGE_SERVICE_URL: http://storage:8004
@@ -29,7 +29,7 @@ services:
     ports:
       - "8001:8001"
     env_file:
-      - ./Agents/.env
+      - ./.env
     environment:
       LLM_SERVICE_URL: http://llm:8002
       TOOLS_SERVICE_URL: http://tools:8003
@@ -45,7 +45,7 @@ services:
     ports:
       - "8002:8002"
     env_file:
-      - ./LLM/.env
+      - ./.env
     environment:
       OLLAMA_HOST: http://192.168.0.30:11434
       STORAGE_SERVICE_URL: http://storage:8004
@@ -58,14 +58,13 @@ services:
     ports:
       - "8003:8003"
     env_file:
-      - ./Tools/.env
+      - ./.env
     environment:
       STORAGE_SERVICE_URL: http://storage:8004
-      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/service-account.json
-    volumes:
-      - ./Tools/credentials/service-account.json:/app/secrets/service-account.json:ro
+      SCRIPTS_SERVICE_URL: http://scripts:8005
     depends_on:
       - storage
+      - scripts
 
   storage:
     build:
@@ -73,7 +72,7 @@ services:
     ports:
       - "8004:8004"
     env_file:
-      - ./Storage/.env
+      - ./.env
 
   scripts:
     build:
@@ -81,15 +80,11 @@ services:
     ports:
       - "8005:8005"
     env_file:
-      - ./Storage/.env
-      - ./Tools/.env
+      - ./.env
     environment:
-      AK_GOOGLE_APPLICATION_CREDENTIALS: /app/ak-secrets/service-account.json
-      AK_GDRIVE_ROOT_FOLDER: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
-      GDRIVE_ROOT_FOLDER_ID: 1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H
-      STORAGE_SERVICE_URL: http://storage:8004
+      AK_DATA_DIR: /apinc/data
     volumes:
-      - ./Tools/credentials/service-account.json:/app/ak-secrets/service-account.json:ro
+      - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
     depends_on:
       - storage
 
@@ -99,7 +94,11 @@ services:
     ports:
       - "8006:8006"
     env_file:
-      - ./Storage/.env
+      - ./.env
+    environment:
+      AK_DATA_DIR: /apinc/data
+    volumes:
+      - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
     depends_on:
       - storage
 

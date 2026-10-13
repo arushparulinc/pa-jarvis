@@ -12,9 +12,9 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT.parent / ".env")
 
-GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
+GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 FOLDER_MATCH_CUTOFF = 0.65
 
 
@@ -23,9 +23,9 @@ class GoogleDriveError(RuntimeError):
 
 
 def _get_root_folder_id() -> str:
-    root_folder_id = os.getenv("GDRIVE_ROOT_FOLDER_ID", "").strip()
+    root_folder_id = os.getenv("AK_GDRIVE_ROOT_FOLDER_ID", "").strip()
     if not root_folder_id:
-        raise GoogleDriveError("GDRIVE_ROOT_FOLDER_ID is not configured.")
+        raise GoogleDriveError("AK_GDRIVE_ROOT_FOLDER_ID is not configured.")
     return root_folder_id
 
 
@@ -46,16 +46,16 @@ async def _connect_postgres() -> asyncpg.Connection:
 
 def _get_drive_service():
     """Create a Drive client using the shared Google OAuth credentials."""
-    client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
-    client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "").strip()
-    refresh_token = os.getenv("GOOGLE_REFRESH_TOKEN", "").strip()
+    client_id = os.getenv("AK_GOOGLE_CLIENT_ID", "").strip()
+    client_secret = os.getenv("AK_GOOGLE_CLIENT_SECRET", "").strip()
+    refresh_token = os.getenv("AK_GOOGLE_REFRESH_TOKEN", "").strip()
 
     missing_secrets = [
         name
         for name, value in (
-            ("GOOGLE_CLIENT_ID", client_id),
-            ("GOOGLE_CLIENT_SECRET", client_secret),
-            ("GOOGLE_REFRESH_TOKEN", refresh_token),
+            ("AK_GOOGLE_CLIENT_ID", client_id),
+            ("AK_GOOGLE_CLIENT_SECRET", client_secret),
+            ("AK_GOOGLE_REFRESH_TOKEN", refresh_token),
         )
         if not value
     ]

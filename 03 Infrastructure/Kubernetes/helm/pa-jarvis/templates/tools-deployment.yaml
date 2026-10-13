@@ -23,12 +23,13 @@ spec:
           env:
             - name: STORAGE_SERVICE_URL
               value: "http://storage:8004"
-
-            - name: GDRIVE_ROOT_FOLDER_ID
-              value: "1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H"
+            - name: SCRIPTS_SERVICE_URL
+              value: "http://scripts:8005"
 
           envFrom:
             - secretRef:
                 name: storage-db-secrets
             - secretRef:
                 name: google-oauth-secrets
+            - secretRef:
+                name: tool-secrets

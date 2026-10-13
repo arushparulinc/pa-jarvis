@@ -17,10 +17,10 @@ spec:
           image: "{{ .Values.scripts.image.repository }}:{{ .Values.scripts.image.tag }}"
           imagePullPolicy: {{ .Values.scripts.image.pullPolicy }}
           env:
-            - name: AK_GDRIVE_ROOT_FOLDER
-              value: "1PZjK-JSCKraIUolTwTT2UDJAvCXCkZOB"
             - name: GDRIVE_ROOT_FOLDER_ID
               value: "1T-CohkkM-04O3ughMwDH9C3ZdTW2kH8H"
+            - name: AK_GDRIVE_ROOT_FOLDER_ID
+              value: "1PZjK-JSCKraIUolTwTT2UDJAvCXCkZOB"
             - name: STORAGE_SERVICE_URL
               value: "http://storage:8004"
             - name: AK_DATA_DIR

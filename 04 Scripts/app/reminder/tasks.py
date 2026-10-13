@@ -10,8 +10,8 @@ import asyncpg
 
 from ..call_storage import log_script_execution
 
-gmail = importlib.import_module("app.002 Comms.gmail")
-gdrive = importlib.import_module("app.003 Storage.gdrive")
+gmail = importlib.import_module("app.002 Comms.apinc_gmail")
+gdrive = importlib.import_module("app.003 Storage.apinc_gdrive")
 
 TASKS_GDRIVE_FOLDER_ID = "1A8eqeqV7XIQJLfOS66E-OUrfcgrFfqIR"
 

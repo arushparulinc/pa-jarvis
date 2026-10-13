@@ -14,7 +14,7 @@ class ToolsRegistryError(RuntimeError):
 
 
 TOOLS_REGISTRY_FILE = Path(__file__).resolve().parents[1] / "tools_registry.txt"
-load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 SCHEMA_TYPE_MAP = {
     "array": "array",

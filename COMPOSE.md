@@ -29,8 +29,8 @@ docker compose -f "02 Source/Storage/compose.storage.yaml" up -d
 docker compose -f "04 Scripts/compose.scripts.yaml" up --build
 ```
 
-The Scripts media jobs also require the untracked Google service-account file at
-`02 Source/Tools/credentials/service-account.json`, which is mounted read-only into the container.
+All services load their environment variables from the master file at
+`02 Source/.env`.
 
 ## Analytics only
 

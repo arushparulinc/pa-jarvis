@@ -1,4 +1,4 @@
-"""HTTP client for event logging owned by the Storage service."""
+"""HTTP client for persistence operations owned by the Storage service."""
 
 from collections.abc import Callable
 from functools import wraps
@@ -10,6 +10,22 @@ import httpx
 
 
 STORAGE_SERVICE_URL = os.getenv("STORAGE_SERVICE_URL", "http://storage:8004").rstrip("/")
+
+
+async def get_script_schedules(
+    sched_types: list[str],
+) -> list[dict[str, object]]:
+    """Retrieve configured script schedules from Storage."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.post(
+            f"{STORAGE_SERVICE_URL}/script-schedules",
+            json={"sched_types": sched_types},
+        )
+        response.raise_for_status()
+        schedules = response.json()
+    if not isinstance(schedules, list):
+        raise ValueError("Storage returned an invalid script-schedules response.")
+    return schedules
 
 
 async def log_scheduler_event(
@@ -48,7 +64,13 @@ async def log_script_event(
         response.raise_for_status()
 
 
-def log_script_execution(script_name: str):
+def log_script_execution(
+    script_name: str,
+    *,
+    success_event_name: str = "Execution completed",
+    success_event_type: str = "Success",
+    failure_event_type: str = "Failed",
+):
     """Record the outcome of every invocation of a scheduled script."""
     def decorator(function: Callable[..., Any]):
         @wraps(function)
@@ -57,17 +79,17 @@ def log_script_execution(script_name: str):
                 result = function(*args, **kwargs)
                 if inspect.isawaitable(result):
                     result = await result
-            except Exception:
+            except Exception as exc:
                 await log_script_event(
-                    event_name="Execution failed",
-                    event_type="Failed",
+                    event_name=(str(exc) or exc.__class__.__name__)[:100],
+                    event_type=failure_event_type,
                     script_name=script_name,
                 )
                 raise
 
             await log_script_event(
-                event_name="Execution completed",
-                event_type="Success",
+                event_name=success_event_name,
+                event_type=success_event_type,
                 script_name=script_name,
             )
             return result

@@ -15,7 +15,6 @@ from ..call_storage import log_script_execution
 
 # Match planner_tools so the existing OAuth refresh token can be reused.
 CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar"]
-DEFAULT_CALENDAR_ID = "primary"
 DEFAULT_TIME_ZONE = "America/Toronto"
 
 
@@ -63,7 +62,6 @@ def _get_calendar_service():
 
 
 def _list_upcoming_events(
-    calendar_id: str,
     start: datetime,
     end: datetime,
 ) -> list[dict[str, object]]:
@@ -74,7 +72,7 @@ def _list_upcoming_events(
     try:
         while True:
             response = service.events().list(
-                calendarId=calendar_id,
+                calendarId="primary",
                 timeMin=start.isoformat().replace("+00:00", "Z"),
                 timeMax=end.isoformat().replace("+00:00", "Z"),
                 singleEvents=True,
@@ -125,7 +123,6 @@ def _event_record(event: dict[str, object]) -> tuple[object, ...]:
     start_at, is_all_day = _event_datetime(event.get("start", {}))
     end_at, _ = _event_datetime(event.get("end", {}))
     return (
-        str(event["id"]),
         str(event.get("summary") or "(No title)"),
         str(event.get("description") or "") or None,
         start_at,
@@ -134,45 +131,59 @@ def _event_record(event: dict[str, object]) -> tuple[object, ...]:
     )
 
 
-@log_script_execution("reminder.events")
+@log_script_execution(
+    "reminder.events",
+    success_event_name="Calendar events downloaded and cached",
+    success_event_type="Success",
+    failure_event_type="Failed",
+)
 async def run() -> dict[str, object]:
     """Replace the PostgreSQL calendar cache with events from the next seven days."""
-    calendar_id = os.getenv("GOOGLE_CALENDAR_ID", DEFAULT_CALENDAR_ID).strip()
     start = datetime.now(UTC)
     end = start + timedelta(days=7)
+
+    print(
+        f"Downloading calendar events from {start.isoformat()} to {end.isoformat()}...",
+        flush=True,
+    )
     events = await asyncio.to_thread(
         _list_upcoming_events,
-        calendar_id,
         start,
         end,
     )
+    print(f"Downloaded {len(events)} calendar event(s).", flush=True)
+
+    print("Preparing calendar events for PostgreSQL...", flush=True)
     records = [_event_record(event) for event in events]
 
+    print("Connecting to PostgreSQL...", flush=True)
     connection = await _connect_postgres()
     try:
+        print("Replacing the cached calendar events...", flush=True)
         async with connection.transaction():
             await connection.execute("DELETE FROM toolsdata.google_calendar_events")
             if records:
                 await connection.executemany(
                     """
                     INSERT INTO toolsdata.google_calendar_events (
-                        google_event_id,
                         event_name,
                         event_description,
                         start_at,
                         end_at,
                         is_all_day
                     )
-                    VALUES ($1, $2, $3, $4, $5, $6)
+                    VALUES ($1, $2, $3, $4, $5)
                     """,
                     records,
                 )
+        print(f"Cached {len(records)} calendar event(s) successfully.", flush=True)
     finally:
         await connection.close()
+        print("PostgreSQL connection closed.", flush=True)
 
     return {
         "status": "synchronized",
-        "calendar_id": calendar_id,
+        "calendar_id": "primary",
         "event_count": len(records),
         "range_start": start.isoformat(),
         "range_end": end.isoformat(),

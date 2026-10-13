@@ -1,7 +1,6 @@
 """Schedules for individual media scripts."""
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-import asyncpg
 
 from ..call_storage import log_scheduler_event
 from ..media import pics, videos
@@ -12,9 +11,9 @@ SCRIPT_FUNCTIONS = {"pics": pics.run, "videos": videos.run}
 SCRIPT_SCHEDULES: dict[int, dict[str, object]] = {}
 
 
-async def register_jobs(scheduler: AsyncIOScheduler, connection: asyncpg.Connection) -> None:
+async def register_jobs(scheduler: AsyncIOScheduler) -> None:
     SCRIPT_SCHEDULES.clear()
-    SCRIPT_SCHEDULES.update(await load_schedules(connection, ["media"], SCRIPT_FUNCTIONS))
+    SCRIPT_SCHEDULES.update(await load_schedules(["media"], SCRIPT_FUNCTIONS))
     for schedule_id, schedule in SCRIPT_SCHEDULES.items():
         scheduler.add_job(
             schedule["func"],
