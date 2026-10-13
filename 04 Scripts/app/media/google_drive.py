@@ -151,9 +151,11 @@ def download_random_image_from_random_subfolder(
     folder_name: str,
 ) -> dict[str, object]:
     """Download a random image from a random immediate child folder."""
-    root_folder_id = os.getenv("AK_GDRIVE_ROOT_FOLDER_ID", "").strip()
+    root_folder_id = os.getenv("AK_PICS_GDRIVE_ROOT_FOLDER_ID", "").strip()
     if not root_folder_id:
-        raise AKGoogleDriveError("AK_GDRIVE_ROOT_FOLDER_ID is not configured.")
+        raise AKGoogleDriveError(
+            "AK_PICS_GDRIVE_ROOT_FOLDER_ID is not configured."
+        )
 
     try:
         service = _get_drive_service()
