@@ -91,6 +91,8 @@ services:
       - "8006:8006"
     env_file:
       - ./.env
+    volumes:
+      - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
     depends_on:
       - storage
 
