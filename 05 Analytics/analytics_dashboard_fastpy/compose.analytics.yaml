@@ -8,5 +8,7 @@ services:
       - "8006:8006"
     env_file:
       - ../../02 Source/.env
+    environment:
+      AK_DATA_DIR: /apinc/data
     volumes:
       - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data

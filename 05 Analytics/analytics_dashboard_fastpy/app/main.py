@@ -15,7 +15,7 @@ from app.postgres import create_pool, get_calendar_events, get_high_priority_ite
 
 
 APP_DIR = Path(__file__).resolve().parent
-DATA_DIR = Path(os.getenv("AK_DATA_DIR", "/app/data"))
+DATA_DIR = Path(os.getenv("AK_DATA_DIR", "/apinc/data"))
 templates = Jinja2Templates(directory=APP_DIR / "templates")
 
 

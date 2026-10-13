@@ -79,6 +79,8 @@ services:
       - "8005:8005"
     env_file:
       - ./.env
+    environment:
+      AK_DATA_DIR: /apinc/data
     volumes:
       - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
     depends_on:
@@ -91,6 +93,8 @@ services:
       - "8006:8006"
     env_file:
       - ./.env
+    environment:
+      AK_DATA_DIR: /apinc/data
     volumes:
       - ${AK_DATA_HOST_DIR:-../../data}:/apinc/data
     depends_on:
