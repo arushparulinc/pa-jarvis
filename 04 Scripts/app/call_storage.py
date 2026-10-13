@@ -1,4 +1,4 @@
-"""HTTP client for event logging owned by the Storage service."""
+"""HTTP client for persistence operations owned by the Storage service."""
 
 from collections.abc import Callable
 from functools import wraps
@@ -10,6 +10,22 @@ import httpx
 
 
 STORAGE_SERVICE_URL = os.getenv("STORAGE_SERVICE_URL", "http://storage:8004").rstrip("/")
+
+
+async def get_script_schedules(
+    sched_types: list[str],
+) -> list[dict[str, object]]:
+    """Retrieve configured script schedules from Storage."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.post(
+            f"{STORAGE_SERVICE_URL}/script-schedules",
+            json={"sched_types": sched_types},
+        )
+        response.raise_for_status()
+        schedules = response.json()
+    if not isinstance(schedules, list):
+        raise ValueError("Storage returned an invalid script-schedules response.")
+    return schedules
 
 
 async def log_scheduler_event(

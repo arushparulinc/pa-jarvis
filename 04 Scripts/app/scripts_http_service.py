@@ -3,7 +3,6 @@ import os
 from contextlib import asynccontextmanager
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-import asyncpg
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
@@ -24,19 +23,9 @@ async def lifespan(app: FastAPI):
         raise RuntimeError(f"Unknown SCRIPTS_TIME_ZONE: {timezone_name}") from exc
 
     scheduler = AsyncIOScheduler(timezone=timezone)
-    connection = await asyncpg.connect(
-        host=os.getenv("PGSQL_HOSTNAME"),
-        port=int(os.getenv("PGSQL_PORT", "5432")),
-        user=os.getenv("PGSQL_USER"),
-        password=os.getenv("PGSQL_PASSWORD"),
-        database=os.getenv("PGSQL_DBNAME"),
-    )
-    try:
-        await media.register_jobs(scheduler, connection)
-        await reminders.register_jobs(scheduler, connection)
-        await misc.register_jobs(scheduler, connection)
-    finally:
-        await connection.close()
+    await media.register_jobs(scheduler)
+    await reminders.register_jobs(scheduler)
+    await misc.register_jobs(scheduler)
     scheduler.start()
     app.state.scheduler = scheduler
     try:

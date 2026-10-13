@@ -21,6 +21,32 @@ async def check_postgres_health() -> None:
         await connection.close()
 
 
+async def get_script_schedules_pgsql(
+    sched_types: list[str],
+) -> list[dict[str, object]]:
+    """Return configured script schedules for the requested scheduler types."""
+    connection = await asyncpg.connect(
+        host=os.getenv("PGSQL_HOSTNAME"),
+        port=int(os.getenv("PGSQL_PORT", "5432")),
+        user=os.getenv("PGSQL_USER"),
+        password=os.getenv("PGSQL_PASSWORD"),
+        database=os.getenv("PGSQL_DBNAME"),
+    )
+    try:
+        rows = await connection.fetch(
+            """
+            SELECT sched_id, sched_name, sched_day_of_week, sched_hour, sched_minute
+            FROM config.script_schedules
+            WHERE sched_type = ANY($1::varchar[])
+            ORDER BY sched_id
+            """,
+            sched_types,
+        )
+        return [dict(row) for row in rows]
+    finally:
+        await connection.close()
+
+
 async def log_service_event_pgsql(
     request_id: str,
     service_name: str,
