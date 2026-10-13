@@ -14,7 +14,7 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT.parent / ".env")
 
-GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
+GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 FOLDER_MATCH_CUTOFF = 0.65
 
 

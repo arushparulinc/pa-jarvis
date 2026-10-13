@@ -16,7 +16,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT.parent / ".env")
 
 CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar"]
-DEFAULT_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary").strip()
 DEFAULT_TIME_ZONE = "America/Toronto"
 
 
@@ -86,7 +85,6 @@ async def add_calendar_event(
     event_description: str = "",
     event_priority: str = "",
     time_zone: str = DEFAULT_TIME_ZONE,
-    calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> dict[str, object]:
     """Create an event, deriving its end from the start and duration."""
     try:
@@ -132,7 +130,7 @@ async def add_calendar_event(
     def create_event() -> dict[str, object]:
         try:
             return _get_calendar_service().events().insert(
-                calendarId=calendar_id,
+                calendarId="primary",
                 body=event_body,
             ).execute()
         except HttpError as exc:
@@ -143,13 +141,12 @@ async def add_calendar_event(
 
 async def read_calendar_event(
     event_id: str,
-    calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> dict[str, object]:
     """Read one Google Calendar event by ID."""
     def read_event() -> dict[str, object]:
         try:
             return _get_calendar_service().events().get(
-                calendarId=calendar_id,
+                calendarId="primary",
                 eventId=event_id,
             ).execute()
         except HttpError as exc:
@@ -162,12 +159,11 @@ async def list_calendar_events(
     time_min: str = "",
     time_max: str = "",
     max_results: int = 100,
-    calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> list[dict[str, object]]:
     """List calendar events, optionally bounded by RFC 3339 timestamps."""
     def list_events() -> list[dict[str, object]]:
         query: dict[str, object] = {
-            "calendarId": calendar_id,
+            "calendarId": "primary",
             "singleEvents": True,
             "orderBy": "startTime",
             "maxResults": max_results,
@@ -188,13 +184,12 @@ async def list_calendar_events(
 
 async def delete_calendar_event(
     event_id: str,
-    calendar_id: str = DEFAULT_CALENDAR_ID,
 ) -> dict[str, object]:
     """Delete one Google Calendar event by ID."""
     def delete_event() -> None:
         try:
             _get_calendar_service().events().delete(
-                calendarId=calendar_id,
+                calendarId="primary",
                 eventId=event_id,
             ).execute()
         except HttpError as exc:
