@@ -7,16 +7,20 @@ body{margin:0;background:#0c1729;color:#f4f7fc;font-family:Arial,Helvetica,sans-
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px}
 h1{font-size:30px;margin:0}.brand small{display:block;margin-top:6px;color:#9aacc7;font-size:16px}
 .clock{text-align:right}#time{font-size:34px;font-weight:bold}#date{font-size:16px;color:#acbdd4;margin-top:6px}
-.layout{min-height:0;display:grid;grid-template-rows:10fr 10fr 37fr 18fr 25fr;gap:12px}
+.layout{min-height:0;display:grid;grid-template-rows:10fr 10fr 37fr 20fr 23fr;gap:12px}
 .card{border:1px solid #2c405e;border-radius:18px;overflow:hidden;background:#16253c;min-height:0}
 .image-card{position:relative}.image-card svg{width:100%;height:100%;display:block}
 .message{padding:18px 24px;display:flex;flex-direction:column;justify-content:center}
 .eyebrow{color:#87b5ff;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 8px}
 .message h2{font-size:clamp(18px,2.6vw,31px);line-height:1.15;margin:0}
 .copy{font-size:clamp(13px,1.6vw,20px);line-height:1.4;color:#c2cfe2;margin:8px 0 0}
-.family-photo{position:relative;background:#101f33;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px}
-.family-photo img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;border:4px solid #f7f3e8;border-radius:4px;box-shadow:0 5px 18px rgba(0,0,0,.45)}
-.photo-caption{position:absolute;bottom:0;left:0;right:0;padding:26px 20px 14px;background:linear-gradient(transparent,rgba(5,17,29,.75));font-size:17px;font-weight:600}
+/* Blue keepsake-style photo frame, matching list header palette. */
+.family-photo{background:#0d1c31;padding:5px;display:flex;min-height:0}
+.memory-frame{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;padding:9px 10px 0;border:4px solid #dceafe;border-radius:17px;background:linear-gradient(135deg,#f5f9ff,#dceafe 65%,#eaf3ff);box-shadow:inset 0 0 0 2px #719bc9,0 4px 14px #0005}
+.memory-picture{min-height:0;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #719bc9;border-radius:11px 11px 3px 3px;background:#dceafe}
+.memory-picture img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+.memory-caption{height:68px;flex:none;display:flex;align-items:center;justify-content:center;gap:22px;color:#23467d;font:500 clamp(21px,3vw,33px) Georgia,'Times New Roman',serif;letter-spacing:.01em;text-align:center}
+.flourish{font:normal clamp(12px,1.8vw,20px) Georgia,serif;color:#7fa3cd;white-space:nowrap}
 .lists{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;min-height:0}
 .list{display:flex;flex-direction:column;background:#f5f8fd;color:#192c46}
 .list-header{background:#dceafe;padding:14px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -52,10 +56,10 @@ footer{font-size:11px;color:#91a6c4;display:flex;justify-content:space-between;g
 </style></head><body><main class="screen">
 <header class="topbar"><div class="brand"><h1>PA Jarvis</h1><small>Your home at a glance</small></div><div class="clock"><div id="time"></div><div id="date"></div></div></header>
 <div class="layout">
-<section class="card image-card" aria-label="Mountain landscape"><svg viewBox="0 0 800 460" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMid slice">
+<section class="card image-card" aria-label="Mountain landscape"><svg viewBox="0 0 800 260" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMid slice">
             <title id="landscape-title">Mountains reflected in a lake at sunrise</title>
             <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a9cddd"/><stop offset="1" stop-color="#f4dfbe"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#769fae"/><stop offset="1" stop-color="#254957"/></linearGradient></defs>
-            <rect width="800" height="460" fill="url(#sky)"/>
+            <rect width="800" height="260" fill="url(#sky)"/><g transform="translate(85 40) scale(.78)">
             <circle cx="615" cy="165" r="48" fill="#fff0cb"/>
             <path d="M0 278 145 85 286 253 404 110 556 265 682 155 800 283V340H0Z" fill="#7896a5"/>
             <path d="m103 142 42-57 57 68-51-24-22 27Z M363 165l41-55 45 55-42-21Z" fill="#edf3ed"/>
@@ -64,9 +68,9 @@ footer{font-size:11px;color:#91a6c4;display:flex;justify-content:space-between;g
             <path d="m0 316 105 81 118-80 112 107 135-109 127 70 203-66" fill="none" stroke="#afc3c1" stroke-width="2" opacity=".25"/>
             <path d="M530 345h173M140 370h135M385 401h215M61 427h260" stroke="#d3ddd2" stroke-width="3" opacity=".35"/>
             <path d="M0 460V295l21-48 20 48H29v33l29-62 27 62H68v45l32-70 33 70h-21v87Z" fill="#1a3b43"/>
-          </svg></section>
+          </g></svg></section>
 <section class="card message"><p class="eyebrow">Daily Thought</p><h2>A little progress, every day.</h2><p class="copy">Choose one thing that matters today. Give it your attention, and make room for something you enjoy.</p></section>
-<section class="card family-photo" aria-label="Photo gallery"><img id="family-photo" src="/media/pics/latest" alt="A randomly selected family photo" onload="this.style.display='block'" onerror="this.style.display='none'"><div class="photo-caption">Our moments</div></section>
+<section class="card family-photo" aria-label="Photo gallery"><div class="memory-frame"><div class="memory-picture"><img id="family-photo" src="/media/pics/latest" alt="A randomly selected family photo" onload="this.style.display='block'" onerror="this.style.display='none'"></div><div class="memory-caption"><span class="flourish" aria-hidden="true">❧ ─────</span><span>Good Old Memories</span><span class="flourish" aria-hidden="true">───── ❧</span></div></div></section>
 <section class="card calendar" aria-label="Upcoming calendar events">
 <div class="calendar-label"><strong>Upcoming<br>Events</strong><span id="calendar-status">Loading events…</span></div>
 <div class="calendar-days" id="calendar-days"></div>
