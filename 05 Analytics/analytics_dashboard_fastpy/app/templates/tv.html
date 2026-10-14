@@ -3,7 +3,7 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0c1729;color:#f4f7fc;font-family:Arial,Helvetica,sans-serif}
-.screen{height:100vh;height:100dvh;padding:18px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px}
+.screen{height:100vh;height:100dvh;padding:18px;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:10px}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px}
 h1{font-size:30px;margin:0}.brand small{display:block;margin-top:6px;color:#9aacc7;font-size:16px}
 .clock{text-align:right}#time{font-size:34px;font-weight:bold}#date{font-size:16px;color:#acbdd4;margin-top:6px}
@@ -53,6 +53,13 @@ footer{font-size:11px;color:#91a6c4;display:flex;justify-content:space-between;g
 .calendar-event{font-size:clamp(9px,1.15vw,13px);line-height:1.25;background:#dceafe;border-left:3px solid #4e83c7;padding:5px 4px;margin-bottom:5px;border-radius:3px;overflow-wrap:anywhere}
 .calendar-event time{display:block;font-weight:bold;color:#345d91;margin-bottom:2px}
 @media(max-height:800px){.calendar-label{padding:7px}.calendar-day-header{padding:5px 2px}.calendar-day-events{padding:4px 2px}.calendar-event{padding:3px 2px}}
+
+/* Continuous right-to-left message ticker */
+.ticker{height:34px;display:flex;align-items:center;overflow:hidden;position:relative;border:1px solid #3b5c86;border-radius:9px;background:#dceafe;color:#23467d}
+.ticker-track{display:flex;align-items:center;flex:none;width:max-content;min-width:100%;animation:ticker-scroll 24s linear infinite;will-change:transform}
+.ticker-message{flex:none;white-space:nowrap;font-size:15px;font-weight:600;letter-spacing:.02em;padding-left:calc(100vw - 36px)}
+@keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+@media(max-height:800px){.ticker{height:25px}.ticker-message{font-size:11px}}
 </style></head><body><main class="screen">
 <header class="topbar"><div class="brand"><h1>PA Jarvis</h1><small>Your home at a glance</small></div><div class="clock"><div id="time"></div><div id="date"></div></div></header>
 <div class="layout">
@@ -78,7 +85,7 @@ footer{font-size:11px;color:#91a6c4;display:flex;justify-content:space-between;g
 <section class="lists" aria-label="Priority tasks and shopping">
 <article class="card list" id="tasks"><header class="list-header"><h2>Priority Tasks</h2><span class="count">—</span></header><div class="items"></div><div class="page">Loading dashboard…</div></article>
 <article class="card list" id="shopping"><header class="list-header"><h2>Shopping List</h2><span class="count">—</span></header><div class="items"></div><div class="page">Loading dashboard…</div></article>
-</section></div><footer><span id="sync" role="status">Loading dashboard…</span><span>Dashboard Refresh 60s - Lists Refresh 15s</span></footer>
+</section></div><div class="ticker" aria-label="Scrolling announcements"><div class="ticker-track"><span class="ticker-message">Welcome to PA Jarvis!  •  Have a wonderful day!  •  Remember to enjoy the little moments.</span></div></div><footer><span id="sync" role="status">Loading dashboard…</span><span>Dashboard Refresh 60s - Lists Refresh 15s</span></footer>
 <!-- Same-origin iframe reuses the existing rendered dashboard. Its records are presented in the TV layout. -->
 <iframe id="source" src="/" title="Dashboard data source" aria-hidden="true" tabindex="-1"></iframe>
 </main><script>
