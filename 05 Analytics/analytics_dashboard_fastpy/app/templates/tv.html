@@ -7,15 +7,15 @@ body{margin:0;background:#0c1729;color:#f4f7fc;font-family:Arial,Helvetica,sans-
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px}
 h1{font-size:30px;margin:0}.brand small{display:block;margin-top:6px;color:#9aacc7;font-size:16px}
 .clock{text-align:right}#time{font-size:34px;font-weight:bold}#date{font-size:16px;color:#acbdd4;margin-top:6px}
-.layout{min-height:0;display:grid;grid-template-rows:18fr 13fr 28fr 12fr 29fr;gap:12px}
+.layout{min-height:0;display:grid;grid-template-rows:10fr 10fr 37fr 18fr 25fr;gap:12px}
 .card{border:1px solid #2c405e;border-radius:18px;overflow:hidden;background:#16253c;min-height:0}
 .image-card{position:relative}.image-card svg{width:100%;height:100%;display:block}
 .message{padding:18px 24px;display:flex;flex-direction:column;justify-content:center}
 .eyebrow{color:#87b5ff;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 8px}
 .message h2{font-size:clamp(18px,2.6vw,31px);line-height:1.15;margin:0}
 .copy{font-size:clamp(13px,1.6vw,20px);line-height:1.4;color:#c2cfe2;margin:8px 0 0}
-.family-photo{position:relative;background:#101f33;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:14px}
-.family-photo img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;border:8px solid #f7f3e8;border-radius:4px;box-shadow:0 5px 18px rgba(0,0,0,.45)}
+.family-photo{position:relative;background:#101f33;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px}
+.family-photo img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;border:4px solid #f7f3e8;border-radius:4px;box-shadow:0 5px 18px rgba(0,0,0,.45)}
 .photo-caption{position:absolute;bottom:0;left:0;right:0;padding:26px 20px 14px;background:linear-gradient(transparent,rgba(5,17,29,.75));font-size:17px;font-weight:600}
 .lists{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;min-height:0}
 .list{display:flex;flex-direction:column;background:#f5f8fd;color:#192c46}
@@ -52,11 +52,11 @@ footer{font-size:11px;color:#91a6c4;display:flex;justify-content:space-between;g
 </style></head><body><main class="screen">
 <header class="topbar"><div class="brand"><h1>PA Jarvis</h1><small>Your home at a glance</small></div><div class="clock"><div id="time"></div><div id="date"></div></div></header>
 <div class="layout">
-<section class="card image-card" aria-label="Mountain landscape"><svg viewBox="0 0 800 460" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMin slice">
+<section class="card image-card" aria-label="Mountain landscape"><svg viewBox="0 0 800 460" role="img" aria-labelledby="landscape-title" preserveAspectRatio="xMidYMid slice">
             <title id="landscape-title">Mountains reflected in a lake at sunrise</title>
             <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a9cddd"/><stop offset="1" stop-color="#f4dfbe"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#769fae"/><stop offset="1" stop-color="#254957"/></linearGradient></defs>
             <rect width="800" height="460" fill="url(#sky)"/>
-            <circle cx="615" cy="70" r="48" fill="#fff0cb"/>
+            <circle cx="615" cy="165" r="48" fill="#fff0cb"/>
             <path d="M0 278 145 85 286 253 404 110 556 265 682 155 800 283V340H0Z" fill="#7896a5"/>
             <path d="m103 142 42-57 57 68-51-24-22 27Z M363 165l41-55 45 55-42-21Z" fill="#edf3ed"/>
             <path d="M0 290 105 204 223 290 335 188 470 294 597 223 800 301V349H0Z" fill="#395b6c"/>
