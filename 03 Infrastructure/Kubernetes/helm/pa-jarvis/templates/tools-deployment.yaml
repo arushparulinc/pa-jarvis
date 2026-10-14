@@ -31,5 +31,3 @@ spec:
                 name: storage-db-secrets
             - secretRef:
                 name: google-oauth-secrets
-            - secretRef:
-                name: tool-secrets
